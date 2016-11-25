@@ -3,42 +3,7 @@
 import requests
 import random
 
-
-"""def Requests():
-    Danbooru = 'http://danbooru.donmai.us'
-    Dreq = requests.get(Danbooru + '/posts.json?&limit=2000000')
-
-    loaded_data = Dreq.json()
-
-    last_num = len(loaded_data)
-    random_list = random.sample(range(1, last_num), 1)
-    randomly_chosen_number = random_list[ 0 ]
-
-    r = requests.get(Danbooru + '/posts/' + str(loaded_data[ int(randomly_chosen_number) ][ "id" ]) + '.json')
-"""
-
 class Requests:
-    """Danbooru = 'http://danbooru.donmai.us'
-    Dreq = requests.get(Danbooru + '/posts.json?&limit=2000000')
-
-    loaded_data = Dreq.json()
-
-    last_num = len(loaded_data)
-    random_list = random.sample(range(1, last_num), 1)
-    randomly_chosen_number = random_list[0]
-
-    r = requests.get(Danbooru + '/posts/' + str(loaded_data[int(randomly_chosen_number)]["id"]) + '.json')
-
-    id = r.json()["id"]
-    created_at = r.json()["created_at"]
-    uploader_id = r.json()["uploader_id"]
-    uploader_name = r.json()["uploader_name"]
-    score = r.json()["score"]
-    source = r.json()["score"]
-    md5 = r.json()["md5"]
-    rating"""
-
-
     def __init__(self, id, created_at, uploader_id, uploader_name, score, source,
                  md5, rating, image_width, image_height, tag_string, tag_string_general,
                  tag_count_artist, pixiv_id, file_url, large_file_url, ):
