@@ -55,30 +55,6 @@ def callback_inline(call):
             large_file_url = Img.Danbooru + Img.large_file_url
             bot.send_photo(call.message.from_user.id, large_file_url)
 
-
-
-@bot.inline_handler(lambda query: query.query == 'Hi') #useless?
-#def query_text(inline_query):
-    #try:
-    #    r = types.InlineQueryResultArticle('1', 'Result1', types.InputTextMessageContent('hi'))
-    #    r2 = types.InlineQueryResultArticle('2', 'Result2', types.InputTextMessageContent('hi'))
-    #    bot.answer_inline_query(inline_query.id, [r, r2])
-    #except Exception as e:
-    #    print(e)
-
-@bot.message_handler(func=lambda message: True) #Sending messages w/o "/" Actually not working
-#def ms_sayHI(m):
-   # cid = m.chat.id
-    #text = m.text
-    #bot.send_chat_action(cid, 'typing')
-    #text == re.search(BotLangEN.msg['Hi'], m.text)
-
-    #if text:
-        #bot.send_message(cid, "Hey!")
-    #else:
-        #if not text:
-            #bot.send_message(cid, "Damn :/")
-
 def main_loop():
     bot.polling(none_stop=True, interval=0, timeout=3)
     while 1:
