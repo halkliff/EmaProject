@@ -11,7 +11,7 @@ from API import Img
 from lang import BotLangEN
 
 # Bot Token taken by @BotFather
-TOKEN = '164443212:AAH4s5sns68lyJ-5kCDipgjhyFO-oa50uoU'
+TOKEN = 'TOKEN'
 
 
 # Listener to see when new messages arrives
