@@ -1,8 +1,10 @@
-#Example API _-_UTF-8_-_
+# -*- coding: utf-8 -*-
 
 import requests
 import random
 
+
+from API import acc_setup as acc
 
 SITE_LIST = {
     'konachan': {
@@ -42,12 +44,13 @@ PARAMS = {
     'for_yuri':
         '&tags=yuri+',
     'for_yaoi':
-        '&tags=yaoi+'
+        '&tags=yaoi+',
+    'for_hentai':
+        '&tags=rating%3Aexplicit',
     }
 
 class Requests:
     def __init__(self, username="", password_hash="", site_name="", api_name="", param="", site_url=None):
-        print("API initialized")
 
         self.site_name = site_name.lower()
         self.api_name = api_name.lower()
@@ -73,21 +76,21 @@ class Requests:
             raise Exception("Woops, don't forget to fulfill site_name, api_name and the param.")
 
         if username and password_hash is not "":
-            if username in api_login_info.username:
+            if username in acc.username:
                 self.username = PARAMS['login'].format(username=username)
             else:
                 raise Exception("Username not found")
-            if password_hash in api_login_info.password_hash:
+            if password_hash in acc.password_hash:
                 self.password_hash = PARAMS['password_hash'].format(password_hash=password_hash)
             else:
                 raise Exception("Wrong Password Hash")
         else:
-            self.password_hash = '&password_hash=none'
-            self.username = 'login=none'
-
+            self.password_hash = ""
+            self.username = ""
 
 class Posts:
-    def __init__(self, id, tags, creator_id, author, source, score, md5, file_url, sample_url, width, height, **kwargs):
+    def __init__(self, id, tags, creator_id, author, source, score, md5, file_url, sample_url, width, height, sample_width,
+                 sample_height):
         self.id = id
         self.tags = tags
         self.creator_id = creator_id
@@ -99,25 +102,29 @@ class Posts:
         self.sample_url = sample_url
         self.width = width
         self.height = height
-        self.other_width = kwargs.get("jpeg_width")
-        self.other_height = kwargs.get("jpeg_height")
-        self.other_file_url = kwargs.get("jpeg_url")
+        self.sample_width = sample_width
+        self.sample_height = sample_height
+
 
         #for the sake of consistency, if it doesn't exists, it uses the other
-        if width or height or file_url is None:
-            self.width = self.other_width
-            self.height = self.other_height
-            self.file_url = self.other_file_url
+        if self.file_url is None:
+            self.file_url = self.sample_url
+        else:
+            self.file_url = file_url
 
-        if sample_url is None:
+        if self.sample_url is None:
             raise Exception("Error: Image could not be found in the link", sample_url)
-        if source is None:
-            self.source = "No Source could be found"
+        if self.source is None:
+            self.source = ""
+        else:
+            self.source = source
+
 
 generic_url = '{site_url}{api_name}{login}{password}{param}{page}{limit}'
 
 def anime():
-    l = Requests(site_name='yandere',
+
+    l = Requests(username=acc.username, password_hash=acc.password_hash, site_name='yandere',
                  api_name='posts_list', param='for_anime')
     random_page = random.sample(range(1, 183363), 1)
     random_page_number = random_page[0]
@@ -125,25 +132,200 @@ def anime():
     url = generic_url.format(site_url=l.site_url, api_name=l.api_name, login=l.username,
                                            password=l.password_hash, param=l.param, page='&page='+str(int(random_page_number)),
                                            limit=PARAMS['limit'])
-    print(url)
+
     req = requests.get(url)
 
 
     ret = req.json()
-    id = ret["id"]
-    tags = ret["tags"]
-    creator_id = ret["creator_id"]
-    author = ret["author"]
-    source = ret["source"]
-    score = ret["score"]
-    md5 = ret["md5"]
-    file_url = ret["file_url"]
-    sample_url = ret["sample_url"]
-    width = ret["width"]
-    height = ret["width"]
+    id = ret[0]["id"]
+    tags = ret[0]["tags"]
+    creator_id = ret[0]["creator_id"]
+    author = ret[0]["author"]
+    source = ret[0]["source"]
+    score = ret[0]["score"]
+    md5 = ret[0]["md5"]
+    file_url = ret[0]["file_url"]
+    sample_url = ret[0]["sample_url"]
+    width = ret[0]["width"]
+    height = ret[0]["height"]
+    sample_width = ret[0]["sample_width"]
+    sample_height = ret[0]["sample_height"]
 
-    data = Posts(id, tags, creator_id, author, source, score, md5, file_url, sample_url, width, height)
-    print(data)
-    all = data.tags, data.creator_id, data.author, data.source, data.score, data.md5, data.file_url, data.sample_url, data.width, data.height
+    if width and height is None:
+        width = sample_width
+        height = sample_height
+    else:
+        pass
+
+    data = Posts(id, tags, creator_id, author, source, score, md5, file_url, sample_url, width, height, sample_width, sample_height)
+
+    all = data.id, data.tags, data.creator_id, data.author, data.source, data.score, data.md5, data.file_url, data.sample_url, data.width, data.height
 
     return all
+
+def ecchi():
+
+    l = Requests(username=acc.username, password_hash=acc.password_hash, site_name='yandere',
+             api_name='posts_list', param='for_ecchi')
+    random_page = random.sample(range(1, 108181), 1)
+    random_page_number = random_page[0]
+
+    url = generic_url.format(site_url=l.site_url, api_name=l.api_name, login=l.username,
+                         password=l.password_hash, param=l.param, page='&page=' + str(int(random_page_number)),
+                         limit=PARAMS['limit'])
+    print(url)
+    req = requests.get(url)
+
+    ret = req.json()
+    id = ret[0]["id"]
+    tags = ret[0]["tags"]
+    creator_id = ret[0]["creator_id"]
+    author = ret[0]["author"]
+    source = ret[0]["source"]
+    score = ret[0]["score"]
+    md5 = ret[0]["md5"]
+    file_url = ret[0]["file_url"]
+    sample_url = ret[0]["sample_url"]
+    width = ret[0]["width"]
+    height = ret[0]["height"]
+    sample_width = ret[0]["sample_width"]
+    sample_height = ret[0]["sample_height"]
+
+    if width and height is None:
+        width = sample_width
+        height = sample_height
+    else:
+        pass
+
+    data = Posts(id, tags, creator_id, author, source, score, md5, file_url, sample_url, width, height, sample_width,
+                sample_height)
+
+    all = data.id, data.tags, data.creator_id, data.author, data.source, data.score, data.md5, data.file_url, data.sample_url, data.width, data.height
+
+    return all
+
+def loli():
+
+    l = Requests(username=acc.username, password_hash=acc.password_hash, site_name='yandere',
+                 api_name='posts_list', param='for_loli')
+    random_page = random.sample(range(1, 14921), 1)
+    random_page_number = random_page[0]
+
+    url = generic_url.format(site_url=l.site_url, api_name=l.api_name, login=l.username,
+                             password=l.password_hash, param=l.param, page='&page=' + str(int(random_page_number)),
+                             limit=PARAMS['limit'])
+
+    req = requests.get(url)
+
+    ret = req.json()
+    id = ret[0]["id"]
+    tags = ret[0]["tags"]
+    creator_id = ret[0]["creator_id"]
+    author = ret[0]["author"]
+    source = ret[0]["source"]
+    score = ret[0]["score"]
+    md5 = ret[0]["md5"]
+    file_url = ret[0]["file_url"]
+    sample_url = ret[0]["sample_url"]
+    width = ret[0]["width"]
+    height = ret[0]["height"]
+    sample_width = ret[0]["sample_width"]
+    sample_height = ret[0]["sample_height"]
+
+    if width and height is None:
+        width = sample_width
+        height = sample_height
+    else:
+        pass
+
+    data = Posts(id, tags, creator_id, author, source, score, md5, file_url, sample_url, width, height, sample_width,
+                 sample_height)
+
+    all = data.id, data.tags, data.creator_id, data.author, data.source, data.score, data.md5, data.file_url, data.sample_url, data.width, data.height
+
+    return all
+
+def hentai():
+
+    l = Requests(username=acc.username, password_hash=acc.password_hash, site_name='yandere',
+                 api_name='posts_list', param='for_hentai')
+    random_page = random.sample(range(1, 29486), 1)
+    random_page_number = random_page[0]
+
+    url = generic_url.format(site_url=l.site_url, api_name=l.api_name, login=l.username,
+                             password=l.password_hash, param=l.param, page='&page=' + str(int(random_page_number)),
+                             limit=PARAMS['limit'])
+
+    req = requests.get(url)
+
+    ret = req.json()
+    id = ret[0]["id"]
+    tags = ret[0]["tags"]
+    creator_id = ret[0]["creator_id"]
+    author = ret[0]["author"]
+    source = ret[0]["source"]
+    score = ret[0]["score"]
+    md5 = ret[0]["md5"]
+    file_url = ret[0]["file_url"]
+    sample_url = ret[0]["sample_url"]
+    width = ret[0]["width"]
+    height = ret[0]["height"]
+    sample_width = ret[0]["sample_width"]
+    sample_height = ret[0]["sample_height"]
+
+    if width and height is None:
+        width = sample_width
+        height = sample_height
+    else:
+        pass
+
+    data = Posts(id, tags, creator_id, author, source, score, md5, file_url, sample_url, width, height, sample_width,
+                 sample_height)
+
+    all = data.id, data.tags, data.creator_id, data.author, data.source, data.score, data.md5, data.file_url, data.sample_url, data.width, data.height
+
+    return all
+
+def yuri():
+
+    l = Requests(username=acc.username, password_hash=acc.password_hash, site_name='yandere',
+                 api_name='posts_list', param='for_yuri')
+    random_page = random.sample(range(1, 5027), 1)
+    random_page_number = random_page[0]
+
+    url = generic_url.format(site_url=l.site_url, api_name=l.api_name, login=l.username,
+                             password=l.password_hash, param=l.param, page='&page=' + str(int(random_page_number)),
+                             limit=PARAMS['limit'])
+
+    req = requests.get(url)
+
+    ret = req.json()
+    id = ret[0]["id"]
+    tags = ret[0]["tags"]
+    creator_id = ret[0]["creator_id"]
+    author = ret[0]["author"]
+    source = ret[0]["source"]
+    score = ret[0]["score"]
+    md5 = ret[0]["md5"]
+    file_url = ret[0]["file_url"]
+    sample_url = ret[0]["sample_url"]
+    width = ret[0]["width"]
+    height = ret[0]["height"]
+    sample_width = ret[0]["sample_width"]
+    sample_height = ret[0]["sample_height"]
+
+    if width and height is None:
+        width = sample_width
+        height = sample_height
+    else:
+        pass
+
+    data = Posts(id, tags, creator_id, author, source, score, md5, file_url, sample_url, width, height, sample_width,
+                 sample_height)
+
+    all = data.id, data.tags, data.creator_id, data.author, data.source, data.score, data.md5, data.file_url, data.sample_url, data.width, data.height
+
+    return all
+
+# Usage: 0: id, 1: tags, 2: creator_id, 3: author, 4: source, 5: score, 6: md5, 7: file_url,
+# 8: sample_url, 9: width, 10:height
