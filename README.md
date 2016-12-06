@@ -17,7 +17,7 @@ To start the setup, you must do the following:
   [*Note: password hash is SHA1 based, where the main hash is ```"choujin-steiner--{0}--"```({0} must be the password you use to log-in)*]
 2. Open [Config.py](https://github.com/halkliff/EmaProject/blob/Beta-2/Config.py)
   - Change the value of ```TOKEN``` to the token given for you by [@BotFather](https://telegram.me/botfather)
-  - Change the value of ```MASTER_ID``` to your own Telegram Unique Indentifier (e.g.: -1054321567)
+  - Change the value of ```BOT_ID``` to your own bot ID, without the "@". _NOTE: IF YOU PUT THE "@", THE BOT MIGHT NOT WORK PROPERLY_
   - Change the value of ```BOT_NAME``` to the name you want your bot to have - Yes, you can rename your bot easily with it
   
 Now you're all set! run ```Bot.py``` and watch your Ema-based bot working!
