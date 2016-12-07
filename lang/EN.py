@@ -11,7 +11,7 @@ commandText = {
         u'BETA build no. 0.6.1' ,
     'help':
         u'A little bit lost? Don\'t worry!\n'
-        u'Use the `buttons` bellow to see specific help:',
+        u'Use the buttons bellow to see specific help:',
     'commands':
         u'Here are all my `commands`, sir!\n\n'
         u'/anime - Sends you a random _anime_  Picture\n'
@@ -27,7 +27,7 @@ commandText = {
     'inline_help':
         u'Here are some tips to use my `inline` feature, sir:\n\n'
         u'1. *Inline Usage*\n'
-        u'  To use me inline, just tap in your input field `@EmaRobot`, and the query\n'
+        u'  To use me inline, just tap in your input field `@{bot_id}`, and the query\n'
         u'  message should appear, so you can type what you want me to search.\n\n'
         u'2. *Searching by Tags* [|?|](telegram.me/{bot_id}?start=tags)\n'
         u'  You can use tags to make a specific search within my source\n\n'
@@ -43,15 +43,38 @@ commandText = {
         u'Done! Now you are a pro in `inline search`, sir! (≧▽≦)',
     '/start tags':
         u'Usage:\n'
-        u'`@EmaRobot [tags]`\n'
+        u'`{bot_id} [tags]`\n'
         u'Example: `@{bot_id} nase_yaeka bra` - This will return few images that matches these tags\n\n',
     '/start source_id':
         u'You can use any combination of numbers, from `0` to `2465530` - This will return you a single image '
         u'that matches this id.\n\n'
-        u'_(Keep in mind: don\'t try astronomical numbers, I have a big source, but it\'s not infinite!)_'
+        u'_(Keep in mind: don\'t try astronomical numbers, I have a big source, but it\'s not infinite!)_',
+    'help_use':
+        u'Right, {name}. It\'s very simple to use me! I\'ll help you setting things up.\n'
+        u'First, you probably saw my command row, that row of commands that shows up when you tap that\n'
+        u'little |/|, in your typing bar. as you click on it, it will show all the available commands at\n'
+        u'me! Also, you can click [here to see all my Commands!](https://telegram.me/{bot_id}?start=commands)\n'
+        u'As you select one of my commands, it will send its designed feature, for example:\n'
+        u'  -`/anime` _will send you a random Anime picture_\n'
+        u'  -`/tag` _let\'s you searching for a tag!_ [|?|](telegram.me/{bot_id}?start=tags)\n\n'
+        u'You can also make an inline search in me! [|?|](telegram.me/{bot_id}?start=inline_search)\n'
+        u'Just do the following:\n'
+        u'`@{bot_id} nase_yaeka bra` - This will return few images that matches the tags `nase_yaeka` and `bra`.\n\n'
 
 }
 
+msg = {
+    'Hi': "Hi | Hi! | Hello | Hello!"
+}
+
+keyboard = {
+    'Test':
+        u'Hi, *{name}*!\n\n'
+        u'This is just a _test_ of the `Keyboard` Telegram provides us :D',
+    'Test2':
+        u'No, {name}.\n'
+        u'You can\'t touch my _boobs_.'
+}
 
 if __name__=="__main__":
     print("imported!")
