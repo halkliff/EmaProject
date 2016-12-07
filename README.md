@@ -34,3 +34,7 @@ Now you're all set! run ```Bot.py``` and watch your Ema-based bot working!
 - [ ] Update with the final version 1.x.x
 - [ ] Translate to *Portuguese, Deutsch, Russian,* and *Spanish*
 - [ ] Start the Chatting bot Project (Yes, Ema will be able to talk with you in the future!)
+
+
+# Special thanks:
+[@DanialNoori94](telegram.me/danialnoori94) - Many, Many thanks! without you, this project would never be possible ❤️
