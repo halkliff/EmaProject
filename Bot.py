@@ -2,11 +2,9 @@
 # Exclusive use
 
 import telebot
-from telebot import types
 import logging
 import time
 import sys
-import re
 from API import Img
 from lang import BotLangEN
 
@@ -34,26 +32,80 @@ telebot.logger.setLevel(logging.DEBUG)  # Outputs debug messages to console.
 
 @bot.message_handler(commands=['start'], ) #triggers the message for /start command
 def send_welcome(m):
-    bot.reply_to(m, BotLangEN.commandText['start'].format(name = m.from_user.first_name), parse_mode='markdown')
+    try:
+        bot.reply_to(m, BotLangEN.commandText['start'].format(name = m.from_user.first_name), parse_mode='markdown')
+    except:
+        pass
 
 @bot.message_handler(commands=['anime'])
 def send_anime(m):
     cid = m.chat.id
-    picture = Img.Danbooru + Img.file_url
-    keyboard = telebot.types.InlineKeyboardMarkup()
-    button = telebot.types.InlineKeyboardButton(text="Original {H} x {W}".format(H = Img.image_height, W = Img.image_width),
-                                                callback_data='large_file_url')
-    keyboard.add(button)
+    load = Img.anime()
+    picture = load[14]
+    width = load[8]
+    height = load[9]
+    large_file_url = load[15]
 
-    bot.send_chat_action(cid, 'upload_photo')
-    bot.send_photo(cid, picture, reply_markup=keyboard)
+    keyboard = telebot.types.InlineKeyboardMarkup()
+    button = telebot.types.InlineKeyboardButton(text="Original {H} x {W}".format(H=height, W=width),
+                                                url=large_file_url)
+    button2 = telebot.types.InlineKeyboardButton(text="More", callback_data='generate')
+    try:
+        keyboard.add(button)
+        keyboard.add(button2)
+
+        bot.send_chat_action(cid, 'upload_photo')
+        bot.send_photo(cid, picture, reply_markup=keyboard) #reply_markup=keyboard
+    except Exception:
+        bot.send_message(cid, "Wasn't able to proceed your request.")
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
     if call.message: # procees only buttons from messages
-        if call.data == "large_file_url":
-            large_file_url = Img.Danbooru + Img.large_file_url
-            bot.send_photo(call.message.from_user.id, large_file_url)
+        if call.data == "generate":
+            load = Img.anime()
+            generate = load[14]
+            width = load[8]
+            height = load[9]
+            large_file_url = load[15]
+
+            keyboard = telebot.types.InlineKeyboardMarkup()
+            button = telebot.types.InlineKeyboardButton(
+                text="Original {H} x {W}".format(H=height, W=width),url=large_file_url)
+            button2 = telebot.types.InlineKeyboardButton(text="More",
+                                                         callback_data='generate')
+            try:
+                keyboard.add(button)
+                keyboard.add(button2)
+
+                bot.send_photo(call.message.chat.id, generate, reply_markup=keyboard)
+            except Exception:
+                pass
+
+
+
+
+@bot.inline_handler(lambda query: query.query == 'Hi') #useless?
+#def query_text(inline_query):
+    #try:
+    #    r = types.InlineQueryResultArticle('1', 'Result1', types.InputTextMessageContent('hi'))
+    #    r2 = types.InlineQueryResultArticle('2', 'Result2', types.InputTextMessageContent('hi'))
+    #    bot.answer_inline_query(inline_query.id, [r, r2])
+    #except Exception as e:
+    #    print(e)
+
+@bot.message_handler(func=lambda message: True) #Sending messages w/o "/" Actually not working
+#def ms_sayHI(m):
+   # cid = m.chat.id
+    #text = m.text
+    #bot.send_chat_action(cid, 'typing')
+    #text == re.search(BotLangEN.msg['Hi'], m.text)
+
+    #if text:
+        #bot.send_message(cid, "Hey!")
+    #else:
+        #if not text:
+            #bot.send_message(cid, "Damn :/")
 
 def main_loop():
     bot.polling(none_stop=True, interval=0, timeout=3)
