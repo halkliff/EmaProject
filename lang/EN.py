@@ -43,7 +43,7 @@ commandText = {
         u'Done! Now you are a pro in `inline search`, sir! (≧▽≦)',
     '/start tags':
         u'Usage:\n'
-        u'`{bot_id} [tags]`\n'
+        u'`@{bot_id} [tags]`\n'
         u'Example: `@{bot_id} nase_yaeka bra` - This will return few images that matches these tags\n\n',
     '/start source_id':
         u'You can use any combination of numbers, from `0` to `2465530` - This will return you a single image '
@@ -75,6 +75,10 @@ keyboard = {
         u'No, {name}.\n'
         u'You can\'t touch my _boobs_.'
 }
+
+# u'/yaoi - Sends you a random _yaoi_ Picture'
+      #  u'`/cosplay` - Sends you a random _cosplay_  Picture 🚫\n'
+      #  u'`/ecosplay` - Sends you a random _ero cosplay_  Picture 🚫\n'
 
 if __name__=="__main__":
     print("imported!")

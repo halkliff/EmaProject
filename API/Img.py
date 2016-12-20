@@ -19,14 +19,16 @@ SITE_LIST = {
 API_NAME={
         'posts_list':
             '/post.json?',
-    'tags_list':
-        '/tag.json'
+        'tags_list':
+            '/tag.json?'
 
     }
 
 PARAMS = {
     'limit':
         '&limit=1',
+    'tag_limit':
+        '&limit=0',
     'page':
         '&page=',
     'safe':
@@ -47,7 +49,10 @@ PARAMS = {
         '&tags=yaoi+',
     'for_hentai':
         '&tags=rating%3Aexplicit',
+    'search':
+        '&tags=order%3Arandom+'
     }
+generic_url = '{site_url}{api_name}{login}{password}{param}{page}{limit}'
 
 class Requests:
     def __init__(self, username="", password_hash="", site_name="", api_name="", param="", site_url=None):
@@ -70,8 +75,10 @@ class Requests:
                 raise Exception("Check again the api_name")
             if param in list(PARAMS):
                 self.param = PARAMS[param]
+            elif param == 'None':
+                pass
             else:
-                raise Exception("Check again the api_name")
+                raise Exception("Check again the param")
         else:
             raise Exception("Woops, don't forget to fulfill site_name, api_name and the param.")
 
@@ -90,7 +97,7 @@ class Requests:
 
 class Posts:
     def __init__(self, id, tags, creator_id, author, source, score, md5, file_url, sample_url, width, height, sample_width,
-                 sample_height):
+                 sample_height, preview_url):
         self.id = id
         self.tags = tags
         self.creator_id = creator_id
@@ -104,6 +111,7 @@ class Posts:
         self.height = height
         self.sample_width = sample_width
         self.sample_height = sample_height
+        self.preview_url = preview_url
 
 
         #for the sake of consistency, if it doesn't exists, it uses the other
@@ -119,8 +127,6 @@ class Posts:
         else:
             self.source = source
 
-
-generic_url = '{site_url}{api_name}{login}{password}{param}{page}{limit}'
 
 def anime():
 
@@ -157,7 +163,7 @@ def anime():
     else:
         pass
 
-    data = Posts(id, tags, creator_id, author, source, score, md5, file_url, sample_url, width, height, sample_width, sample_height)
+    data = Posts(id, tags, creator_id, author, source, score, md5, file_url, sample_url, width, height, sample_width, sample_height, None)
 
     all = data.id, data.tags, data.creator_id, data.author, data.source, data.score, data.md5, data.file_url, data.sample_url, data.width, data.height
 
@@ -173,7 +179,7 @@ def ecchi():
     url = generic_url.format(site_url=l.site_url, api_name=l.api_name, login=l.username,
                          password=l.password_hash, param=l.param, page='&page=' + str(int(random_page_number)),
                          limit=PARAMS['limit'])
-    print(url)
+
     req = requests.get(url)
 
     ret = req.json()
@@ -198,7 +204,7 @@ def ecchi():
         pass
 
     data = Posts(id, tags, creator_id, author, source, score, md5, file_url, sample_url, width, height, sample_width,
-                sample_height)
+                sample_height, None)
 
     all = data.id, data.tags, data.creator_id, data.author, data.source, data.score, data.md5, data.file_url, data.sample_url, data.width, data.height
 
@@ -239,7 +245,7 @@ def loli():
         pass
 
     data = Posts(id, tags, creator_id, author, source, score, md5, file_url, sample_url, width, height, sample_width,
-                 sample_height)
+                 sample_height, None)
 
     all = data.id, data.tags, data.creator_id, data.author, data.source, data.score, data.md5, data.file_url, data.sample_url, data.width, data.height
 
@@ -280,7 +286,7 @@ def hentai():
         pass
 
     data = Posts(id, tags, creator_id, author, source, score, md5, file_url, sample_url, width, height, sample_width,
-                 sample_height)
+                 sample_height, None)
 
     all = data.id, data.tags, data.creator_id, data.author, data.source, data.score, data.md5, data.file_url, data.sample_url, data.width, data.height
 
@@ -321,11 +327,59 @@ def yuri():
         pass
 
     data = Posts(id, tags, creator_id, author, source, score, md5, file_url, sample_url, width, height, sample_width,
-                 sample_height)
+                 sample_height, None)
 
     all = data.id, data.tags, data.creator_id, data.author, data.source, data.score, data.md5, data.file_url, data.sample_url, data.width, data.height
 
     return all
 
+def query(tag):
+    l = Requests(username=acc.username, password_hash=acc.password_hash, site_name='yandere',
+                 api_name='posts_list', param='search')
+
+    _url = '{site_url}{api_name}{login}{password}{param}{tags}{limit}'
+
+    url = _url.format(site_url=l.site_url, api_name=l.api_name, login=l.username,
+                             password=l.password_hash, param=l.param, tags=tag,
+                             limit=PARAMS['tag_limit'])
+
+    req = requests.get(url)
+
+    ret = req.json()
+    quantity = len(ret)
+    if quantity == 0:
+        return "Nobody here but chickens!"
+    else:
+        rnum = random.sample(range(0, quantity), 1)
+        num = rnum[0]
+
+        id = ret[num]["id"]
+        tags = ret[num]["tags"]
+        creator_id = ret[num]["creator_id"]
+        author = ret[num]["author"]
+        source = ret[num]["source"]
+        score = ret[num]["score"]
+        md5 = ret[num]["md5"]
+        file_url = ret[num]["file_url"]
+        sample_url = ret[num]["sample_url"]
+        width = ret[num]["width"]
+        height = ret[num]["height"]
+        sample_width = ret[num]["sample_width"]
+        sample_height = ret[num]["sample_height"]
+        preview_url = ret[num]["preview_url"]
+
+        if width and height is None:
+            width = sample_width
+            height = sample_height
+        else:
+            pass
+
+        data = Posts(id, tags, creator_id, author, source, score, md5, file_url, sample_url, width, height, sample_width, sample_height,
+                     preview_url)
+
+        all = data.id, data.tags, data.creator_id, data.author, data.source, data.score, data.md5, data.file_url, data.sample_url, data.width, data.height, data.preview_url
+
+        return all
+
 # Usage: 0: id, 1: tags, 2: creator_id, 3: author, 4: source, 5: score, 6: md5, 7: file_url,
-# 8: sample_url, 9: width, 10:height
+# 8: sample_url, 9: width, 10:height, 11:preview_url
