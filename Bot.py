@@ -1,5 +1,5 @@
 # -*- utf-8 -*-
-# _||_ Code Test number 10 _||_
+# _||_ Code Test number 14 _||_
 # Exclusive use
 
 import telebot
@@ -16,7 +16,7 @@ TOKEN = Config.TOKEN
 
 
 # Listener to see when new messages arrives
-
+"""
 def listener(messages):
 
     #When new messages arrive TeleBot will call this function.
@@ -26,13 +26,13 @@ def listener(messages):
              #print the sent message to the console
             print(str(m.chat.first_name) + " [" + str(m.chat.id) + "]: " + m.text)
         #print(str(m))
-
+""" #Activate this for debugging only
 
 bot = telebot.TeleBot(TOKEN)  # register bot token
-bot.set_update_listener(listener)  # register listener
+#bot.set_update_listener(listener)  # register listener. Use thhis only for debugging
 
 logger = telebot.logger  # set logger
-telebot.logger.setLevel(logging.DEBUG)  # Outputs debug messages to console.
+telebot.logger.setLevel(logging.INFO)  # Outputs debug messages to console. set 'logging.DEBUG' for debugging
 
 
 @bot.message_handler(commands=['start'], ) #triggers the message for /start command
@@ -160,7 +160,7 @@ def send_anime(m):
         bot.send_chat_action(cid, 'upload_photo')
         bot.send_photo(cid, picture,caption='🖥Resolution: {W} x {H}\n\n👤Uploader: {uploader}\n\n#⃣Tags: {tag}'.format(H=height, W=width,
                                                                                                           uploader=uploader,tag=tag,),
-                       reply_markup=keyboard)  # reply_markup=keyboard
+                       reply_markup=keyboard)
     except Exception:
         bot.send_message(cid, "Wasn't able to proceed your request.")
         print("An error Ocurred in /anime:", Exception)
@@ -198,7 +198,7 @@ def send_ecchi(m):
         bot.send_chat_action(cid, 'upload_photo')
         bot.send_photo(cid, picture,caption='🖥Resolution: {W} x {H}\n\n👤Uploader: {uploader}\n\n#⃣Tags: {tag}'.format(H=height, W=width,
                                                                                                           uploader=uploader,tag=tag,),
-                       reply_markup=keyboard)  # reply_markup=keyboard
+                       reply_markup=keyboard)
     except Exception:
         bot.send_message(cid, "Wasn't able to proceed your request.")
         print("An error Ocurred in /ecchi:", Exception)
@@ -236,7 +236,7 @@ def send_loli(m):
         bot.send_chat_action(cid, 'upload_photo')
         bot.send_photo(cid, picture,caption='🖥Resolution: {W} x {H}\n\n👤Uploader: {uploader}\n\n#⃣Tags: {tag}'.format(H=height, W=width,
                                                                                                           uploader=uploader,tag=tag,),
-                       reply_markup=keyboard)  # reply_markup=keyboard
+                       reply_markup=keyboard)
     except Exception:
         bot.send_message(cid, "Wasn't able to proceed your request.")
         print("An error Ocurred in /loli:", Exception)
@@ -274,7 +274,7 @@ def send_hentai(m):
         bot.send_chat_action(cid, 'upload_photo')
         bot.send_photo(cid, picture,caption='🖥Resolution: {W} x {H}\n\n👤Uploader: {uploader}\n\n#⃣Tags: {tag}'.format(H=height, W=width,
                                                                                                           uploader=uploader,tag=tag,),
-                       reply_markup=keyboard)  # reply_markup=keyboard
+                       reply_markup=keyboard)
     except Exception:
         bot.send_message(cid, "Wasn't able to proceed your request.")
         print("An error Ocurred in /hentai:", Exception)
@@ -520,7 +520,7 @@ def callback_inline(call):
                                  parse_mode='markdown', disable_web_page_preview=True)
             except Exception:
                 print("An Error occurred when processing inline button[Usage Help]:", Exception)
-
+"""
 @bot.inline_handler(func= lambda m:True)
 def query_text(inline_query):
     print(inline_query.from_user.first_name + ":" + inline_query.query)
@@ -531,7 +531,7 @@ def query_text(inline_query):
         print(load)
         id = load[0]
         picture = load[8]
-        big_picture = load[7]
+        big_picture = load[7]                                       # ==> Inline not working yet.
         if big_picture is None:
             big_picture = load[8]
         width = load[9]
@@ -548,19 +548,10 @@ def query_text(inline_query):
             bot.answer_inline_query(inline_query.id, r)
         except:
             pass
-
+"""
 
     except Exception:
         raise Exception
-
-@bot.message_handler(func=lambda message: True) #Handling keyboard buttons
-def keyboard(m):
-    text = m.text
-
-    if text == "1. Test":
-        bot.reply_to(m, en.keyboard['Test'].format(name=m.from_user.first_name), parse_mode='markdown')
-    elif text == "2. Test":
-        bot.reply_to(m, en.keyboard['Test2'].format(name=m.from_user.first_name), parse_mode='markdown')
 
 def main_loop():
     #while True:
