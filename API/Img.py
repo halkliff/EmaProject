@@ -333,14 +333,16 @@ def yuri():
 
     return all
 
-def query(tag):
+def Query(tag):
+
+    y = tag.split().replace(':', '%3A')
     l = Requests(username=acc.username, password_hash=acc.password_hash, site_name='yandere',
                  api_name='posts_list', param='search')
 
     _url = '{site_url}{api_name}{login}{password}{param}{tags}{limit}'
 
     url = _url.format(site_url=l.site_url, api_name=l.api_name, login=l.username,
-                             password=l.password_hash, param=l.param, tags=tag,
+                             password=l.password_hash, param=l.param, tags=y,
                              limit=PARAMS['tag_limit'])
 
     req = requests.get(url)
@@ -348,7 +350,7 @@ def query(tag):
     ret = req.json()
     quantity = len(ret)
     if quantity == 0:
-        return "Nobody here but chickens!"
+        return None
     else:
         rnum = random.sample(range(0, quantity), 1)
         num = rnum[0]
