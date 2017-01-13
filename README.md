@@ -22,11 +22,25 @@ To start the setup, you must do the following:
   - Change the value of ```TOKEN``` to the token given for you by [@BotFather](https://telegram.me/botfather)
   - Change the value of ```BOT_ID``` to your own bot ID, without the "@". _NOTE: IF YOU PUT THE "@", THE BOT MIGHT NOT WORK PROPERLY_
   - Change the value of ```BOT_NAME``` to the name you want your bot to have - Yes, you can rename your bot easily with it
+  - Change the value of ```MASTER_ID``` to your own chat id.
   
 Now you're all set! run ```Bot.py``` and watch your Ema-based bot working!
 
 
 # Changelog
+## 0.9.x (Beta 6-8) coming soon!
+**Beta-5:**
+  * Fixed some issues and mispellings
+  * Added /admin command to know the status
+  * Register users in a database
+  * Users now have multiple language choices and changeability of it's language in database
+  * Inline mode deactivated until the real database is ready
+  * Delete DE.py
+  * Delete ES.py
+  * Delete PT.py
+  * Delete RU.py
+  * Delete EN.txt
+
 **Beta-4:**
   * Workout in inline mode
   * API now have a function that will search for tags
@@ -39,8 +53,9 @@ Now you're all set! run ```Bot.py``` and watch your Ema-based bot working!
 
 # Future Plans
 
+- [ ] Finish up the inline mode
 - [ ] Update with the final version 1.x.x
-- [ ] Translate to *Portuguese, Deutsch, Russian,* and *Spanish*
+- [ ] Translate to *Portuguese, Deutsch, Italian, Russian,* and *Spanish*
 - [ ] Start the Chatting bot Project (Yes, Ema will be able to talk with you in the future!)
 - [ ] Reduce at minimum the code repetitions, to follow the [DRY - Don't repeat yourself](https://en.wikipedia.org/wiki/Don't_repeat_yourself) rule.
 
