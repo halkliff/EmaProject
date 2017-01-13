@@ -10,8 +10,7 @@ BOT_NAME: change this to customize your bot's name. I.e.: "Cyka Bot"
 BOT_ID: change this to insert your bot's id (i.e.: Cyka_bot) NOTE: DON'T USE THE ~@~ OTHERWISE THE BOT
                                                                     WORK PROPERLY!!!
 """
-# 'Emα'  'Put your token here within the single quote' 'Rename me to change your bot name!' 'Rename here with your bot ID, without the ~@~'
-TOKEN = '327068957:AAGvW-4w53Qo-ilN4dnoXy2-mlQ1UFOUhPg'
-MASTER_ID = '123956344'
-BOT_NAME = 'Emα'
-BOT_ID = 'EmaBETA_bot'
+TOKEN = 'Put your token here within the single quote'
+MASTER_ID = 'Change this to your own chat id'
+BOT_NAME = 'Rename me to change your bot name!'
+BOT_ID = 'Rename here with your bot ID, without the ~@~'
