@@ -15,10 +15,7 @@ To start the setup, you must do the following:
 1. **Install all the needed stuff**:</br>
 ```$ pip install PyTelegramBotAPI --upgrade```</br>
 ```$ pip install tinydb --upgrade```
-2. Open [/Api/acc_setup.py](https://github.com/halkliff/EmaProject/blob/Beta-2/API/acc_setup.py)
-  - Change the username and password_hash to the given to you by [Yandere](https://yande.re/post)</br>
-  [*Note: password hash is SHA1 based, where the main hash is ```"choujin-steiner--{0}--"```({0} must be the password you use to log-in)*]
-3. Open [Config.py](https://github.com/halkliff/EmaProject/blob/Beta-2/Config.py)
+2. Open [Config.py](https://github.com/halkliff/EmaProject/blob/Beta-2/Config.py)
   - Change the value of ```TOKEN``` to the token given for you by [@BotFather](https://telegram.me/botfather)
   - Change the value of ```BOT_ID``` to your own bot ID, without the "@". _NOTE: IF YOU PUT THE "@", THE BOT MIGHT NOT WORK PROPERLY_
   - Change the value of ```BOT_NAME``` to the name you want your bot to have - Yes, you can rename your bot easily with it
@@ -28,7 +25,19 @@ Now you're all set! run ```Bot.py``` and watch your Ema-based bot working!
 
 
 # Changelog
-## 0.9.x (Beta 6-8) coming soon!
+**Beta-7:**
+  Version 0.9.x! (Beta 7)
+  0.9x is here!
+
+  * Complete change in the API
+  * New Server API (Gelbooru)
+  * Working inline mode
+
+and much more! See all the changes [here](https://github.com/halkliff/EmaProject/releases/tag/0.9.1-Beta-7)
+
+**Beta-6:**
+  * Bug Fixes
+
 **Beta-5:**
   * Fixed some issues and mispellings
   * Added /admin command to know the status
@@ -53,12 +62,14 @@ Now you're all set! run ```Bot.py``` and watch your Ema-based bot working!
 
 # Future Plans
 
-- [ ] Finish up the inline mode
+- [x] Finish up the inline mode (Finally!!!)
 - [ ] Update with the final version 1.x.x
-- [ ] Translate to *Portuguese, Deutsch, Italian, Russian,* and *Spanish*
+- [x] Translate to *Portuguese, Deutsch, Italian, Russian,* and *Spanish* (Yay!)
 - [ ] Start the Chatting bot Project (Yes, Ema will be able to talk with you in the future!)
-- [ ] Reduce at minimum the code repetitions, to follow the [DRY - Don't repeat yourself](https://en.wikipedia.org/wiki/Don't_repeat_yourself) rule.
+- [x] Reduce at minimum the code repetitions, to follow the [DRY - Don't repeat yourself](https://en.wikipedia.org/wiki/Don't_repeat_yourself) rule.
+- [x] Embraced most of Pep-8
 
 
 # Special thanks:
-[@DanialNoori94](telegram.me/danialnoori94) - Many, Many thanks! without you, this project would never be possible ❤️
+[@DanialNoori94](telegram.me/danialnoori94) - Many, Many thanks! without you, this project would never be possible ❤️<br />
+Special thanks to [@skyr75](t.me/skyr75), [@Blury](t.me/blury), [@zvizdapil](t.me/zvizdapil), and [@R3D_C0D3](t.me/r3d_c0d3) for translating All Ema strings, really thanks!!!
