@@ -116,29 +116,34 @@ def send_welcome(m):
 @bot.message_handler(commands=['help'])  # sends the help message with buttons
 def send_help(m):
     match = user_search(str(m.chat.id))  # Check user database to see if the user exists
-    lang = match['language']  # If the user exists, gets it's desired language
+    
+    if not match:
+        bot.reply_to(m, "Ooops, looks like you're not registered. Please tap /start to register.")
+    else:
+    
+        lang = match['language']  # If the user exists, gets it's desired language
 
-    keyboard = telebot.types.InlineKeyboardMarkup(row_width=2)
-    button = telebot.types.InlineKeyboardButton(Lang.Lang[lang]['keyboard']['inline_buttons']['help']['usg_help'],
-                                                callback_data='help_use')
-    button2 = telebot.types.InlineKeyboardButton(Lang.Lang[lang]['keyboard']['inline_buttons']['help']['cmnds'],
-                                                 callback_data='commands')
-    button3 = telebot.types.InlineKeyboardButton(Lang.Lang[lang]['keyboard']['inline_buttons']['help']['in_help'],
-                                                 callback_data='inline_help')
-    button4 = telebot.types.InlineKeyboardButton(Lang.Lang[lang]['keyboard']['inline_buttons']['help']['tags'],
-                                                 callback_data='tags')
-    button5 = telebot.types.InlineKeyboardButton(Lang.Lang[lang]['keyboard']['inline_buttons']['help']['src_id'],
-                                                 callback_data='source_id')
+        keyboard = telebot.types.InlineKeyboardMarkup(row_width=2)
+        button = telebot.types.InlineKeyboardButton(Lang.Lang[lang]['keyboard']['inline_buttons']['help']['usg_help'],
+                                                    callback_data='help_use')
+        button2 = telebot.types.InlineKeyboardButton(Lang.Lang[lang]['keyboard']['inline_buttons']['help']['cmnds'],
+                                                    callback_data='commands')
+        button3 = telebot.types.InlineKeyboardButton(Lang.Lang[lang]['keyboard']['inline_buttons']['help']['in_help'],
+                                                    callback_data='inline_help')
+        button4 = telebot.types.InlineKeyboardButton(Lang.Lang[lang]['keyboard']['inline_buttons']['help']['tags'],
+                                                    callback_data='tags')
+        button5 = telebot.types.InlineKeyboardButton(Lang.Lang[lang]['keyboard']['inline_buttons']['help']['src_id'],
+                                                    callback_data='source_id')
 
-    try:
-        keyboard.add(button)
-        keyboard.row(button2, button3)
-        keyboard.row(button4, button5)
+        try:
+            keyboard.add(button)
+            keyboard.row(button2, button3)
+            keyboard.row(button4, button5)
 
-        bot.reply_to(m, Lang.Lang[lang]['CommandText']['help'], parse_mode='markdown', reply_markup=keyboard)
-    except Exception as e:
-        print("An error occurred when processing /help:", e)
-        pass
+            bot.reply_to(m, Lang.Lang[lang]['CommandText']['help'], parse_mode='markdown', reply_markup=keyboard)
+        except Exception as e:
+            print("An error occurred when processing /help:", e)
+            pass
 
 
 @bot.message_handler(commands=['about'])  # sends an message with info about the bot
