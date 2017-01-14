@@ -1,4 +1,4 @@
-﻿# -*- -*-
+# -*- -*-
 # _||_ Code Test number 15 _||_
 # Exclusive use
 
@@ -40,6 +40,7 @@ def user_search(from_user_id):
 
 # ========== End of user database funcs ==========
 
+
 # Deep linking function
 def deep_link(text):
     return text.split()[1] if len(text.split()) > 1 else None
@@ -70,13 +71,14 @@ telebot.logger.setLevel(logging.DEBUG)  # Outputs debug messages to console.
 
 @bot.message_handler(commands=['start'])  # triggers the message for /start command
 def send_welcome(m):
-    cid = m.chat.id
-    match = user_search(str(m.chat.id))
+    cid = m.chat.id  # Chat unique Identifier
+    match = user_search(str(m.chat.id))  # Check user database to see if the user exists
 
     dp_link = deep_link(m.text)
-    if dp_link:
+    if dp_link:  # if /start has a parameter
         try:
-            lang = match['language']
+            lang = match['language']  # If the user exists, gets it's desired language
+
             bot.send_message(cid, Lang.Lang[lang]['CommandText']['{0}'.format(dp_link)].format(bot_id=Config.BOT_ID),
                              parse_mode='markdown', disable_web_page_preview=True)
         except Exception as e:
@@ -85,10 +87,13 @@ def send_welcome(m):
 
     else:
 
-        if not match:
+        if not match:  # If user couldn't be found in the database
             try:
-                ky = types.ReplyKeyboardRemove(selective=False)
+                ky = types.ReplyKeyboardRemove(selective=False)  # Hides any previous keyboard, if there is
+
+                #  Adds the user in database
                 new_user(str(m.from_user.username), str(m.chat.id), 'English', 'Yes', 'Yes')
+
                 bot.reply_to(m, Lang.Lang['English']['CommandText']['start'].format(name=m.from_user.first_name,
                                                                                     bot_name=Config.BOT_NAME),
                              parse_mode='markdown', reply_markup=ky)
@@ -97,8 +102,10 @@ def send_welcome(m):
                 pass
         else:
             try:
-                lang = match['language']
-                ky = types.ReplyKeyboardRemove(selective=False)
+                lang = match['language']  # If the user exists, gets it's desired language
+
+                ky = types.ReplyKeyboardRemove(selective=False)  # Hides any previous keyboard, if there is
+
                 bot.reply_to(m, Lang.Lang[lang]['CommandText']['start_reg'].format(name=m.from_user.first_name),
                              parse_mode='markdown', reply_markup=ky)
             except Exception as e:
@@ -106,10 +113,10 @@ def send_welcome(m):
                 pass
 
 
-@bot.message_handler(commands=['help'])
+@bot.message_handler(commands=['help'])  # sends the help message with buttons
 def send_help(m):
-    match = user_search(str(m.chat.id))
-    lang = match['language']
+    match = user_search(str(m.chat.id))  # Check user database to see if the user exists
+    lang = match['language']  # If the user exists, gets it's desired language
 
     keyboard = telebot.types.InlineKeyboardMarkup(row_width=2)
     button = telebot.types.InlineKeyboardButton(Lang.Lang[lang]['keyboard']['inline_buttons']['help']['usg_help'],
@@ -134,8 +141,8 @@ def send_help(m):
         pass
 
 
-@bot.message_handler(commands=['about'])
-def send_about(m):
+@bot.message_handler(commands=['about'])  # sends an message with info about the bot
+def send_about(m):                        # It is interesting to change it to your own info
     msg = """Emα Project
 Emα is your personal Eastern Media Assistant, and can help you
 fetching content you like from the most famous websites.
@@ -155,10 +162,10 @@ Supported by @DanialNoori94
     bot.reply_to(m, msg, parse_mode='markdown')
 
 
-@bot.message_handler(commands=['admin'])
+@bot.message_handler(commands=['admin'])  # Admin command, for Statistics, and in the future, for broadacsting
 def admin(m):
-    cid = str(m.chat.id)
-    master = str(Config.MASTER_ID)
+    cid = str(m.chat.id)  # Chat unique identifier
+    master = str(Config.MASTER_ID)  # The bot owner unique identifier
 
     def send_to_master():
         kb = telebot.types.InlineKeyboardMarkup()
@@ -166,11 +173,11 @@ def admin(m):
         kb.add(kbbtn1)
         bot.reply_to(m, "Select one of the options below:", reply_markup=kb)
 
-    send_to_master() if master == cid else bot.reply_to(m, 'Who are you?')
+    send_to_master() if master == cid else bot.reply_to(m, 'Who are you?')  # Sends the message if, and only if,
+                                                                            # The user is the owner
 
-
-@bot.message_handler(commands=['settings', 'config', 'configurate'])
-@bot.message_handler(func=lambda m: m.text == '⚙ Settings')
+@bot.message_handler(commands=['settings', 'config'])  # command triggers for the settings
+@bot.message_handler(func=lambda m: m.text == '⚙ Settings')  # Not used yet
 def settings(m):
     match = user_search(str(m.chat.id))
 
@@ -191,13 +198,13 @@ def settings(m):
         except Exception as e:
             print("An error occurred when processing /settings:", e)
 
-
-@bot.message_handler(commands=['lang', 'language', 'lang_prefs'])
-@bot.message_handler(func=lambda m: m.text in ['🌐 Language', '🌐 Idioma', '🌐 Lenguaje', '🌐 Sprache', '🌐 Язык', '🌐 Lingua'])
+langs = ['🌐 Language', '🌐 Idioma', '🌐 Lenguaje', '🌐 Sprache', '🌐 Язык', '🌐 Lingua']
+@bot.message_handler(commands=['lang', 'language', 'lang_prefs'])  # command triggers for the language selector
+@bot.message_handler(func=lambda m: m.text in langs)  # If the text matches the language selectors
 def lang(m):
-    cid = m.chat.id
-    match = user_search(str(cid))
-    if not match:
+    cid = m.chat.id  # Chat unique Identifier
+    match = user_search(str(cid))  # Check user database to see if the user exists
+    if not match:  # If user not found in the database
         bot.reply_to(m, "Ooops, looks like you're not registered. Please tap /start to register.")
     else:
         lang = match['language']
@@ -215,18 +222,18 @@ def lang(m):
         try:
             msg = bot.reply_to(m, Lang.Lang[lang]['keyboard']['messages']['Lang_pref'],
                                parse_mode='markdown', reply_markup=kb)
-            bot.register_next_step_handler(msg, chosen_lang)
-        except Exception as e:
+            bot.register_next_step_handler(msg, chosen_lang)  # sends the msg, and register the 'chosen_lang' func
+        except Exception as e:                                # to be handled next
             print("An error occurred when processing 'Language Selector':", e)
             pass
 
 
 def chosen_lang(m):
-    cid = m.chat.id
-    user = Query()
-    text = m.text.split()
+    cid = m.chat.id  # Chat unique identifier
+    user = Query()  # Search the database
+    text = m.text.split()  # Breaks the text, so it returns a list
     try:
-        db.update({'language': text[1]}, user.id == str(cid))
+        db.update({'language': text[1]}, user.id == str(cid))  # Updates the database with the second item in the list
 
         k = types.ReplyKeyboardRemove(selective=False)
         bot.reply_to(m, Lang.Lang[text[1]]['keyboard']['messages']['Chosen_lang'],
@@ -242,41 +249,41 @@ ntf_string = ['🔔 Notifications', '🔔 Notificações', '🔔 Notificaciones'
 @bot.message_handler(commands=['notif', 'notifications',])
 @bot.message_handler(func=lambda m: m.text in ntf_string)
 def send_notif(m):
-    cid = m.chat.id
-    match = user_search(str(cid))
-    if not match:
+    cid = m.chat.id  # Chat unique identifier
+    match = user_search(str(cid))  # Check user database to see if the user exists
+    if not match:  # If user not found in the database
         bot.reply_to(m, "Ooops, looks like you're not registered. Please tap /start to register.")
     else:
-        lang = match['language']
-        opt = match['notif']
+        lang = match['language']  # User language
+        opt = match['notif']  # User notification choice 'yes/no"
         kb = types.ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
         kbtn1 = types.KeyboardButton("⭕️")
         kbtn2 = types.KeyboardButton("❌")
-        if opt == 'Yes':
+        if opt == 'Yes':  # If the user already has notifications on, it turns off
             btn = kbtn1
-        else:
+        else:  # If the user has notifications off, it turns on
             btn = kbtn2
         kb.add(btn)
         try:
             msg = bot.reply_to(m, Lang.Lang[lang]['keyboard']['messages']['notif_pref'],
                                parse_mode='markdown', reply_markup=kb)
-            bot.register_next_step_handler(msg, chosen_notif)
-        except Exception as e:
+            bot.register_next_step_handler(msg, chosen_notif)  # sends the msg, and register the 'chosen_notif' func
+        except Exception as e:                                 # to be handled next
             print("An error occurred when processing 'Notification Selecto':", e)
             pass
 
 
 def chosen_notif(m):
-    cid = m.chat.id
-    user = Query()
-    text = m.text
+    cid = m.chat.id  # Chat unique identifier
+    user = Query()  # Search the database
+    text = m.text  # gets the emoji text to handle in the database
     try:
         if text == "⭕️":
-            db.update({'notif': 'No'}, user.id == str(cid))
+            db.update({'notif': 'No'}, user.id == str(cid))  # The notifications were on, so now they'll be disabled
             msg = "Disabled!"
 
         elif text == "❌":
-            db.update({'notif': 'Yes'}, user.id == str(cid))
+            db.update({'notif': 'Yes'}, user.id == str(cid))  # The notifications were off, so now they'll be enabled
             msg = "Enabled!"
 
         k = types.ReplyKeyboardRemove(selective=False)
@@ -287,16 +294,16 @@ def chosen_notif(m):
         pass
 
 
-@bot.message_handler(commands=['ping'])
+@bot.message_handler(commands=['ping'])  # This is just to check if the bot is online. Nothing special
 def pong(m):
     bot.reply_to(m, 'Pong!')
 
 
-@bot.message_handler(commands=['commands'])
+@bot.message_handler(commands=['commands'])  # Commands list
 def send_commands(m):
-    match = user_search(str(m.chat.id))
+    match = user_search(str(m.chat.id))  # Check user database to see if the user exists
 
-    if not match:
+    if not match:  # If user not found in the database
         bot.reply_to(m, "Ooops, looks like you're not registered. Please tap /start to register.")
     else:
         lang = match['language']
@@ -308,11 +315,11 @@ def send_commands(m):
             pass
 
 
-@bot.message_handler(commands=['inline_help'])
+@bot.message_handler(commands=['inline_help']) # Sends the Inline help
 def send_inline_help(m):
-    match = user_search(str(m.chat.id))
+    match = user_search(str(m.chat.id))  # Check user database to see if the user exists
 
-    if not match:
+    if not match:  # If user not found in the database
         bot.reply_to(m, "Ooops, looks like you're not registered. Please tap /start to register.")
     else:
         lang = match['language']
@@ -326,23 +333,23 @@ def send_inline_help(m):
 
 
 # ==================== Start of Media Handling ====================
-@bot.message_handler(commands=['anime', 'ecchi', 'hentai', 'loli', 'yuri'])
+@bot.message_handler(commands=['anime', 'ecchi', 'hentai', 'loli', 'yuri'])  #All the available media commands
 def send_media(m):
-    cid = m.chat.id
-    load_media = m.text.replace("/", "")
+    cid = m.chat.id  # Chat unique identifier
+    load_media = m.text.replace("/", "")  # Removes the "/" from the command, so it gets as a normal word
     try:
-        bot.send_chat_action(cid, 'upload_photo')
+        bot.send_chat_action(cid, 'upload_photo')  # Sends "uploading photo" chat action
 
-        load = Img.post(load_media)
+        load = Img.post(load_media)  # Loads the json object with the query
 
-        picture = load['file_url']
+        picture = load['file_url']  # The picture url
 
-        id = load['id']
+        id = load['id']  # The picture unique identifier, on the server
 
         keyboard = telebot.types.InlineKeyboardMarkup(row_width=2)
-        button = telebot.types.InlineKeyboardButton(text="💾 Download", url=picture)
-        button2 = telebot.types.InlineKeyboardButton(text="➕ More", callback_data=load_media)
-        button3 = telebot.types.InlineKeyboardButton(text="🔘 Share", switch_inline_query="id:{0}".format(id))
+        button = telebot.types.InlineKeyboardButton(text="💾 Download", url=picture)  # Download button
+        button2 = telebot.types.InlineKeyboardButton(text="➕ More", callback_data=load_media)  # load more
+        button3 = telebot.types.InlineKeyboardButton(text="🔘 Share", switch_inline_query="id:{0}".format(id))  # Share
 
         try:
             keyboard.row(button, button3)
@@ -401,62 +408,63 @@ def send_tag(m):
 """
 
 
-@bot.message_handler(commands=['id', 'search_id'])
+@bot.message_handler(commands=['id', 'search_id'])  # Searches any server id
 def send_id_query(m):
-    cid = m.chat.id
+    cid = m.chat.id  # Chat unique identifier
     dp_link = deep_link(m.text)
-    if dp_link is None:
-        bot.reply_to(m, "Usage:\n `/id [num]` - the num is any number from `1` to `3284774`.")
-
-    try:
-        bot.send_chat_action(cid, 'upload_photo')
-
-        load = Img.search_query("id:{0}".format(dp_link))
-        picture = load[0]['file_url']
-
-        id = load[0]['id']
-
-        keyboard = telebot.types.InlineKeyboardMarkup()
-        button = telebot.types.InlineKeyboardButton(text="💾 Download", url=picture)
-        button3 = telebot.types.InlineKeyboardButton(text="🔘 Share", switch_inline_query="id:{0}".format(id))
+    if dp_link is None:  # if /id has not a parameter
+        bot.reply_to(m, "Usage:\n `/id [num]` - the num is any number from `1` to `3284774`.", parse_mode='markdown')
+    else:
 
         try:
-            keyboard.add(button)
-            keyboard.add(button3)
+            bot.send_chat_action(cid, 'upload_photo')  # Sends "uploading photo" chat action
 
-            bot.send_photo(cid, picture, caption='🔖id: {id}\n'.format(id=id), reply_markup=keyboard)
+            load = Img.search_query("id:{0}".format(dp_link))  # Loads the json object with the query
+            picture = load[0]['file_url']  # The picture url
+
+            id = load[0]['id']  # The picture unique identifier, on the server
+
+            keyboard = telebot.types.InlineKeyboardMarkup()
+            btn = telebot.types.InlineKeyboardButton(text="💾 Download", url=picture)  # Download button
+            btn2 = telebot.types.InlineKeyboardButton(text="🔘 Share", switch_inline_query="id:{0}".format(id))  # Share
+
+            try:
+                keyboard.add(btn)
+                keyboard.add(btn2)
+
+                bot.send_photo(cid, picture, caption='🔖id: {id}\n'.format(id=id), reply_markup=keyboard)
+            except Exception as e:
+                bot.reply_to(m, "Sorry!\n`An unexpected error occurred when processing your request`.",
+                             parse_mode='markdown')
+                print("An error Occurred in /id {0}:".format(dp_link), e)
+                pass
+
         except Exception as e:
             bot.reply_to(m, "Sorry!\n`An unexpected error occurred when processing your request`.",
                          parse_mode='markdown')
-            print("An error Occurred in /id {0}:".format(dp_link), e)
+            print("An Error occurred when loading 'id' dict:", e)
             pass
-
-    except Exception as e:
-        bot.reply_to(m, "Sorry!\n`An unexpected error occurred when processing your request`.",
-                     parse_mode='markdown')
-        print("An Error occurred when loading 'id' dict:", e)
-        pass
 
 
 load_type = ['anime', 'ecchi', 'loli', 'hentai', 'yuri']
-@bot.callback_query_handler(func=lambda call: call.data in load_type)
-def media_callback(call):
+@bot.callback_query_handler(func=lambda call: call.data in load_type)  # Whenever the user taps the "more" button,
+def media_callback(call):                                              # It triggers this function
     if call.message:  # Processes only buttons from messages
-        if call.data:
+        if call.data:  # If there's any data callback
             try:
-                bot.send_chat_action(call.message.chat.id, 'upload_photo')
+                bot.send_chat_action(call.message.chat.id, 'upload_photo')  # Sends "uploading photo" chat action
 
-                load = Img.post(call.data)
+                load = Img.post(call.data)  # Loads the json object with the query
 
-                picture = load['file_url']
+                picture = load['file_url']  # The picture url
 
-                id = load['id']
+                id = load['id']  # The picture unique identifier, on the server
 
                 keyboard = telebot.types.InlineKeyboardMarkup(row_width=2)
-                button = telebot.types.InlineKeyboardButton(text="💾 Download", url=picture)
-                button2 = telebot.types.InlineKeyboardButton(text="➕ More", callback_data=call.data)
+                button = telebot.types.InlineKeyboardButton(text="💾 Download", url=picture)  # Download button
+                button2 = telebot.types.InlineKeyboardButton(text="➕ More", callback_data=call.data)  # more
                 button3 = telebot.types.InlineKeyboardButton(text="🔘 Share", switch_inline_query="id:{0}".format(id))
-
+                #Share
                 try:
                     keyboard.row(button, button3)
                     keyboard.add(button2)
@@ -485,7 +493,7 @@ def media_callback(call):
                 pass
 
 
-@bot.inline_handler(lambda query: True)
+@bot.inline_handler(lambda query: True)  # Inline mode. YAY!
 def query_text(inline_query):
     """
     kb = types.InlineKeyboardMarkup(row_width=2)
@@ -498,22 +506,22 @@ def query_text(inline_query):
                                         reply_markup=kb)
     bot.answer_inline_query(inline_query.id, [r])
     """
-    text = inline_query.query
-    offset = inline_query.offset
-    if offset == '':
+    text = inline_query.query  # The text input by the user, where @bot_name [text] is this text
+    offset = inline_query.offset  # Checks if there is any offset by the query
+    if offset == '':  # If there's no offset
         off_set = 0
-    else:
+    else:  # If there's a offset
         off_set = int(offset)
 
     try:
-        if off_set == 0:
-            f = 0
-        else:
+        if off_set == 0:        # All of this is just to work with the API
+            f = 0               # There's nothing really to explain, as it
+        else:                   # is complicated to me to do so.
             f = off_set / 50
 
-        load = Img.search_query(text, pid=int(f))
-        nload = len(load)
-        if nload == 0:
+        load = Img.search_query(text, pid=int(f))  # Loads a json object with the query
+        nload = len(load)  # calculates how much data there's in load
+        if nload == 0:  # if there's no data in 'load'
             msg = """
                     _Looks like you tried some tag combinations that didn't work properly..._
                     _But don't worry! just try up another tag combination!_
@@ -528,20 +536,22 @@ def query_text(inline_query):
                                                  reply_markup=key,
                                                  description='Looks like you tried some tag combinations that...')
             bot.answer_inline_query(inline_query.id, [fgw])
-        cache_list = []
-        if text.startswith("id:"):
-            file = load[0]['file_url']
-            id = load[0]['id']
-            dirc = load[0]['directory']
-            hash = load[0]['hash']
-            thumb = "http://gelbooru.com/thumbnails/{0}/thumbnail_{1}.jpg".format(dirc, hash)
 
-            tags = load[0]["tags"].split()
-            tags1 = tags[0]
-            tags2 = tags[1]
-            tags3 = tags[2]
+        cache_list = []  # This is the cache database the bot will send
 
-            if file.endswith('.jpg' or '.png' or '.jpeg' or '.bmp'):
+        if text.startswith("id:"):  # If the query starts with 'id:', which means it came from a "Share" instance
+            file = load[0]['file_url']  # File url
+            id = load[0]['id']  # File unique identifier in the server
+            dirc = load[0]['directory']  # Directory where it is stored in the server
+            hash = load[0]['hash']  # The hash string provided by the server
+            thumb = "http://gelbooru.com/thumbnails/{0}/thumbnail_{1}.jpg".format(dirc, hash)  # A complicated thumbnail
+                                                                                               # builder
+            tags = load[0]["tags"].split()  # Splits the tags in a list
+            tags1 = tags[0]  # These are just
+            tags2 = tags[1]  # to load up to
+            tags3 = tags[2]  # three tags
+
+            if file.endswith('.jpg' or '.png' or '.jpeg' or '.bmp'):  # if the file is any image
                 kb = types.InlineKeyboardMarkup(row_width=2)
                 kb1 = types.InlineKeyboardButton(text="💾 Download", url=file)
                 kb2 = types.InlineKeyboardButton(text="🔍 Search more",
@@ -551,9 +561,9 @@ def query_text(inline_query):
                 kb.row(kb1, kb2)
                 r = types.InlineQueryResultPhoto('1', file, thumb, caption='🔖id: {id}\n'.format(id=id),
                                                  reply_markup=kb)
-                cache_list.append(r)
+                cache_list.append(r)  # inserts the object in the cache database
 
-            elif file.endswith('.gif'):
+            elif file.endswith('.gif'):  # if the file is gif
                 kb = types.InlineKeyboardMarkup(row_width=2)
                 kb1 = types.InlineKeyboardButton(text="💾 Download", url=file)
                 kb2 = types.InlineKeyboardButton(text="🔍 Search more",
@@ -563,16 +573,17 @@ def query_text(inline_query):
                 kb.row(kb1, kb2)
                 r = types.InlineQueryResultGif('1', file, file, caption='🔖id: {id}\n'.format(id=id),
                                                reply_markup=kb)
-                cache_list.append(r)
+                cache_list.append(r)  # inserts the object in the cache database
 
-        else:
-            for i in range(nload):
-                file = load[i]['file_url']
-                id = load[i]['id']
-                dirc = load[i]['directory']
-                hash = load[i]['hash']
-                thumb = "http://gelbooru.com/thumbnails/{0}/thumbnail_{1}.jpg".format(dirc, hash)
-                if file.endswith('.jpg' or '.png' or '.jpeg' or '.bmp'):
+        else:  # if it is a normal query
+            for i in range(nload):  # this 'for' loop inserts on the 'cache_list' up to 50 objects for the query result
+                file = load[i]['file_url']  # file url
+                id = load[i]['id']  # File unique identifier in the server
+                dirc = load[i]['directory']  # Directory where it is stored in the server
+                hash = load[i]['hash']  # The hash string provided by the server
+                thumb = "http://gelbooru.com/thumbnails/{0}/thumbnail_{1}.jpg".format(dirc, hash)  # again, the odd
+                                                                                                   # thumbnail stuff
+                if file.endswith('.jpg' or '.png' or '.jpeg' or '.bmp'):  # if the file is any image
                     kb = types.InlineKeyboardMarkup(row_width=2)
                     kb1 = types.InlineKeyboardButton(text="💾 Download", url=file)
                     kb2 = types.InlineKeyboardButton(text="🔍 Search more",
@@ -581,9 +592,9 @@ def query_text(inline_query):
                     r = types.InlineQueryResultPhoto(str(i), file, thumb,
                                                      caption='🔖id: {id}\n'.format(id=id),
                                                      reply_markup=kb)
-                    cache_list.append(r)
+                    cache_list.append(r)  # inserts the object in the cache database
 
-                elif file.endswith('.gif'):
+                elif file.endswith('.gif'):  # if the file is gif
                     kb = types.InlineKeyboardMarkup(row_width=2)
                     kb1 = types.InlineKeyboardButton(text="💾 Download", url=file)
                     kb2 = types.InlineKeyboardButton(text="🔍 Search more",
@@ -591,10 +602,11 @@ def query_text(inline_query):
                     kb.row(kb1, kb2)
                     r = types.InlineQueryResultGif(str(i), file, file, caption='🔖id: {id}\n'.format(id=id),
                                                    reply_markup=kb)
-                    cache_list.append(r)
-                if load[i] is None:
-                    break
-        b = 50 + off_set
+                    cache_list.append(r)  # inserts the object in the cache database
+                if load[i] is None:  # whenever it doesn't have anything more to be loaded and iterate,
+                    break            # it breaks the loop
+
+        b = 50 + off_set  # Complicated stuff, this is for the offset
         bot.answer_inline_query(inline_query.id, cache_list, next_offset=b, cache_time=120,
                                 switch_pm_text="Usage help", switch_pm_parameter="tags")
 
@@ -617,7 +629,7 @@ def query_text(inline_query):
 # ====================  End of Media Handling  ====================
 
 
-@bot.callback_query_handler(func=lambda call: True)
+@bot.callback_query_handler(func=lambda call: True)  # The other inline button calls
 def callback_inline(call):
     if call.message:  # Processes only buttons from messages
         if call.data == "commands":
@@ -718,7 +730,7 @@ def callback_inline(call):
                                   call.message.message_id, reply_markup=kb)
 
 
-@bot.message_handler()
+@bot.message_handler()  # If the user types anything that is not supported by the bot, like messages or commands
 def send_random(m):
     cid = m.chat.id
     msg1 = "Woops, I can't chat yet. Please see /help."
@@ -732,6 +744,7 @@ def send_random(m):
             bot.send_message(cid, msg1, disable_notification=True)
 
 
+# ================================================= Loop the polling =================================================
 def main_loop():
     while True:
         try:
