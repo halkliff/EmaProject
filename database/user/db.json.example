@@ -1,1 +1,1 @@
-{"_default": {"1": {"nsfw": "Yes/No", "language": "Selected language", "id": "random unique ID"}}}
+{"_default": {"1": {"nsfw": "Yes/No", "language": "Selected language", "id": "random unique ID", "notif": "Yes/No}}}
