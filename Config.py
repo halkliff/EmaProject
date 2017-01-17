@@ -1,6 +1,6 @@
 # -*- utf-8 -*-
 
-#Configure everything, otherwise the bot won't work!
+# Configure everything, otherwise the bot won't work!
 
 """
 TOKEN: Access token given to you by @BotFather (https://telegram.me/BotFather
