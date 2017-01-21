@@ -1,5 +1,4 @@
-# -*- -*-
-# _||_ Code Test number 15 _||_
+# _||_ Code Test number 18 _||_
 # Exclusive use
 
 import telebot
@@ -11,7 +10,7 @@ from API import Img
 from language import Lang
 import Config
 import os
-# import random
+import random
 
 # ========== Start of user database funcs ==========
 from tinydb import TinyDB, Query  # database module
@@ -62,8 +61,9 @@ def listener(messages):
         # print(str(m))
 
 
-bot = telebot.TeleBot(TOKEN, threaded=False)  # register bot token
+bot = telebot.AsyncTeleBot(TOKEN, skip_pending=True)  # register bot token
 bot.set_update_listener(listener)  # register listener
+
 
 logger = telebot.logger  # set logger
 telebot.logger.setLevel(logging.DEBUG)  # Outputs debug messages to console.
@@ -72,7 +72,7 @@ telebot.logger.setLevel(logging.DEBUG)  # Outputs debug messages to console.
 @bot.message_handler(commands=['start'])  # triggers the message for /start command
 def send_welcome(m):
     cid = m.chat.id  # Chat unique Identifier
-    match = user_search(str(m.chat.id))  # Check user database to see if the user exists
+    match = user_search(str(cid))  # Check user database to see if the user exists
 
     dp_link = deep_link(m.text)
     if dp_link:  # if /start has a parameter
@@ -82,6 +82,7 @@ def send_welcome(m):
             bot.send_message(cid, Lang.Lang[lang]['CommandText']['{0}'.format(dp_link)].format(bot_id=Config.BOT_ID),
                              parse_mode='markdown', disable_web_page_preview=True)
         except Exception as e:
+            bot.reply_to(m, "Ooops, looks like you're not registered. Please tap /start to register.")
             print("An Error occurred when processing command /start {0}:".format(dp_link), e)
             pass
 
@@ -92,7 +93,7 @@ def send_welcome(m):
                 ky = types.ReplyKeyboardRemove(selective=False)  # Hides any previous keyboard, if there is
 
                 #  Adds the user in database
-                new_user(str(m.from_user.username), str(m.chat.id), 'English', 'Yes', 'Yes')
+                new_user(str(m.from_user.username), str(cid), 'English', 'Yes', 'Yes')
 
                 bot.reply_to(m, Lang.Lang['English']['CommandText']['start'].format(name=m.from_user.first_name,
                                                                                     bot_name=Config.BOT_NAME),
@@ -115,25 +116,26 @@ def send_welcome(m):
 
 @bot.message_handler(commands=['help'])  # sends the help message with buttons
 def send_help(m):
-    match = user_search(str(m.chat.id))  # Check user database to see if the user exists
-    
+    cid = m.chat.id
+    match = user_search(str(cid))  # Check user database to see if the user exists
+
     if not match:
         bot.reply_to(m, "Ooops, looks like you're not registered. Please tap /start to register.")
     else:
-    
+
         lang = match['language']  # If the user exists, gets it's desired language
 
         keyboard = telebot.types.InlineKeyboardMarkup(row_width=2)
         button = telebot.types.InlineKeyboardButton(Lang.Lang[lang]['keyboard']['inline_buttons']['help']['usg_help'],
                                                     callback_data='help_use')
         button2 = telebot.types.InlineKeyboardButton(Lang.Lang[lang]['keyboard']['inline_buttons']['help']['cmnds'],
-                                                    callback_data='commands')
+                                                     callback_data='commands')
         button3 = telebot.types.InlineKeyboardButton(Lang.Lang[lang]['keyboard']['inline_buttons']['help']['in_help'],
-                                                    callback_data='inline_help')
+                                                     callback_data='inline_help')
         button4 = telebot.types.InlineKeyboardButton(Lang.Lang[lang]['keyboard']['inline_buttons']['help']['tags'],
-                                                    callback_data='tags')
+                                                     callback_data='tags')
         button5 = telebot.types.InlineKeyboardButton(Lang.Lang[lang]['keyboard']['inline_buttons']['help']['src_id'],
-                                                    callback_data='source_id')
+                                                     callback_data='source_id')
 
         try:
             keyboard.add(button)
@@ -184,7 +186,8 @@ def admin(m):
 @bot.message_handler(commands=['settings', 'config'])  # command triggers for the settings
 @bot.message_handler(func=lambda m: m.text == '⚙ Settings')  # Not used yet
 def settings(m):
-    match = user_search(str(m.chat.id))
+    cid = m.chat.id
+    match = user_search(str(cid))
 
     if not match:
         bot.reply_to(m, "Ooops, looks like you're not registered. Please tap /start to register.")
@@ -203,6 +206,7 @@ def settings(m):
         except Exception as e:
             print("An error occurred when processing /settings:", e)
 
+
 langs = ['🌐 Language', '🌐 Idioma', '🌐 Lenguaje', '🌐 Sprache', '🌐 Язык', '🌐 Lingua']
 @bot.message_handler(commands=['lang', 'language', 'lang_prefs'])  # command triggers for the language selector
 @bot.message_handler(func=lambda m: m.text in langs)  # If the text matches the language selectors
@@ -218,23 +222,24 @@ def lang(m):
         kbtn1 = types.KeyboardButton("🇧🇷 Português")
         kbtn2 = types.KeyboardButton("🇺🇸 English")
         kbtn3 = types.KeyboardButton("🇪🇸 Español")
-        kbtn4 = types.KeyboardButton("🇮🇪 Italiano")
+        kbtn4 = types.KeyboardButton("🇮🇹 Italiano")
         kbtn5 = types.KeyboardButton("🇷🇺 русский")
         kbtn6 = types.KeyboardButton("🇩🇪 Deutsche")
         kb.add(kbtn2, kbtn1)
         kb.row(kbtn3, kbtn4)
         kb.row(kbtn5, kbtn6)
         try:
-            msg = bot.reply_to(m, Lang.Lang[lang]['keyboard']['messages']['Lang_pref'],
+            bot.reply_to(m, Lang.Lang[lang]['keyboard']['messages']['Lang_pref'],
                                parse_mode='markdown', reply_markup=kb)
-            bot.register_next_step_handler(msg, chosen_lang)  # sends the msg, and register the 'chosen_lang' func
+            #bot.register_next_step_handler(msg, chosen_lang)  # sends the msg, and register the 'chosen_lang' func
         except Exception as e:                                # to be handled next
             print("An error occurred when processing 'Language Selector':", e)
             pass
 
-
+select_langs = ["🇧🇷 Português", "🇺🇸 English", "🇪🇸 Español", "🇮🇹 Italiano", "🇷🇺 русский", "🇩🇪 Deutsche"]
+@bot.message_handler(func=lambda m: m.text in select_langs)
 def chosen_lang(m):
-    cid = m.chat.id  # Chat unique identifier
+    cid = m.from_user.id  # Chat unique identifier
     user = Query()  # Search the database
     text = m.text.split()  # Breaks the text, so it returns a list
     try:
@@ -270,14 +275,16 @@ def send_notif(m):
             btn = kbtn2
         kb.add(btn)
         try:
-            msg = bot.reply_to(m, Lang.Lang[lang]['keyboard']['messages']['notif_pref'],
+            bot.reply_to(m, Lang.Lang[lang]['keyboard']['messages']['notif_pref'],
                                parse_mode='markdown', reply_markup=kb)
-            bot.register_next_step_handler(msg, chosen_notif)  # sends the msg, and register the 'chosen_notif' func
+            #bot.register_next_step_handler(msg, chosen_notif)  # sends the msg, and register the 'chosen_notif' func
         except Exception as e:                                 # to be handled next
-            print("An error occurred when processing 'Notification Selecto':", e)
+            print("An error occurred when processing 'Notification Selector':", e)
             pass
 
 
+ntf_opt = ["⭕️", "❌"]
+@bot.message_handler(func=lambda m: m.text in ntf_opt)
 def chosen_notif(m):
     cid = m.chat.id  # Chat unique identifier
     user = Query()  # Search the database
@@ -306,7 +313,8 @@ def pong(m):
 
 @bot.message_handler(commands=['commands'])  # Commands list
 def send_commands(m):
-    match = user_search(str(m.chat.id))  # Check user database to see if the user exists
+    cid = m.chat.id
+    match = user_search(str(cid))  # Check user database to see if the user exists
 
     if not match:  # If user not found in the database
         bot.reply_to(m, "Ooops, looks like you're not registered. Please tap /start to register.")
@@ -322,7 +330,8 @@ def send_commands(m):
 
 @bot.message_handler(commands=['inline_help']) # Sends the Inline help
 def send_inline_help(m):
-    match = user_search(str(m.chat.id))  # Check user database to see if the user exists
+    cid = m.chat.id
+    match = user_search(str(cid))  # Check user database to see if the user exists
 
     if not match:  # If user not found in the database
         bot.reply_to(m, "Ooops, looks like you're not registered. Please tap /start to register.")
@@ -380,9 +389,11 @@ def send_media(m):
         print("An Error occurred when loading '{0}' dict:".format(load_media), e)
         pass
 
-"""
+
 @bot.message_handler(commands=['tag', 'tags'])
 def send_tag(m):
+    bot.reply_to(m, "This command is not set to work now. See /commands")
+    """
     cid = m.chat.id
     text = m.text.replace("/tags", "")
     try:
@@ -487,30 +498,12 @@ def media_callback(call):                                              # It trig
                     print("An Error occurred in 'more {0}':".format(call.data), e)
                     pass
             except Exception as e:
-                retry_keyboard = telebot.types.InlineKeyboardMarkup()
-                retry_button = telebot.types.InlineKeyboardButton(text="🔄 Retry", callback_data=call.data)
-                retry_keyboard.add(retry_button)
-
-                bot.reply_to(call.message.chat.id,
-                             "Sorry!\n`An unexpected error occurred when processing your request`.\nTry again?",
-                             parse_mode='markdown', reply_markup=retry_keyboard)
                 print("An Error occurred when loading '{0}' dict:".format(call.data), e)
                 pass
 
 
 @bot.inline_handler(lambda query: True)  # Inline mode. YAY!
 def query_text(inline_query):
-    """
-    kb = types.InlineKeyboardMarkup(row_width=2)
-    kbtn1 = types.InlineKeyboardButton("📢My Channel!", url='telegram.me/emaproject')
-    kbtn2 = types.InlineKeyboardButton("👁‍🗨@HαlksNET", url='telegram.me/halksnet')
-    kb.row(kbtn1, kbtn2)
-    r = types.InlineQueryResultArticle('1', 'Inline Search is disabled for maintenance.',
-                                        types.InputTextMessageContent(
-                                            'Inline search is disabled for maintenance. It will be working soon.'),
-                                        reply_markup=kb)
-    bot.answer_inline_query(inline_query.id, [r])
-    """
     text = inline_query.query  # The text input by the user, where @bot_name [text] is this text
     offset = inline_query.offset  # Checks if there is any offset by the query
     if offset == '':  # If there's no offset
@@ -522,7 +515,7 @@ def query_text(inline_query):
         if off_set == 0:        # All of this is just to work with the API
             f = 0               # There's nothing really to explain, as it
         else:                   # is complicated to me to do so.
-            f = off_set / 50
+            f = off_set
 
         load = Img.search_query(text, pid=int(f))  # Loads a json object with the query
         nload = len(load)  # calculates how much data there's in load
@@ -542,9 +535,9 @@ def query_text(inline_query):
                                                  description='Looks like you tried some tag combinations that...')
             bot.answer_inline_query(inline_query.id, [fgw])
 
-        cache_list = []  # This is the cache database the bot will send
-
         if text.startswith("id:"):  # If the query starts with 'id:', which means it came from a "Share" instance
+            result = []
+
             file = load[0]['file_url']  # File url
             id = load[0]['id']  # File unique identifier in the server
             dirc = load[0]['directory']  # Directory where it is stored in the server
@@ -556,64 +549,58 @@ def query_text(inline_query):
             tags2 = tags[1]  # to load up to
             tags3 = tags[2]  # three tags
 
-            if file.endswith('.jpg' or '.png' or '.jpeg' or '.bmp'):  # if the file is any image
-                kb = types.InlineKeyboardMarkup(row_width=2)
-                kb1 = types.InlineKeyboardButton(text="💾 Download", url=file)
-                kb2 = types.InlineKeyboardButton(text="🔍 Search more",
-                                                 switch_inline_query_current_chat="{0} {1} {2}".format(tags1,
-                                                                                                       tags2,
-                                                                                                       tags3))
-                kb.row(kb1, kb2)
-                r = types.InlineQueryResultPhoto('1', file, thumb, caption='🔖id: {id}\n'.format(id=id),
-                                                 reply_markup=kb)
-                cache_list.append(r)  # inserts the object in the cache database
+            kb = types.InlineKeyboardMarkup(row_width=2)
+            kb1 = types.InlineKeyboardButton(text="💾 Download", url=file)
+            kb2 = types.InlineKeyboardButton(text="🔍 Search more",
+                                             switch_inline_query_current_chat="{0} {1} {2}".format(tags1,
+                                                                                                   tags2,
+                                                                                                   tags3))
+            kb.row(kb1, kb2)
 
-            elif file.endswith('.gif'):  # if the file is gif
-                kb = types.InlineKeyboardMarkup(row_width=2)
-                kb1 = types.InlineKeyboardButton(text="💾 Download", url=file)
-                kb2 = types.InlineKeyboardButton(text="🔍 Search more",
-                                                 switch_inline_query_current_chat="{0} {1} {2}".format(tags1,
-                                                                                                       tags2,
-                                                                                                       tags3))
-                kb.row(kb1, kb2)
-                r = types.InlineQueryResultGif('1', file, file, caption='🔖id: {id}\n'.format(id=id),
+            if file.endswith('.gif'):  # if the file is a gif
+                gif = types.InlineQueryResultGif('1', file, file, caption='🔖id: {id}\n'.format(id=id),
                                                reply_markup=kb)
-                cache_list.append(r)  # inserts the object in the cache database
+                result.append(gif)  # inserts the object in the cache database
+
+            else:  # if the file is any type of image
+                pic = types.InlineQueryResultPhoto('1', file, thumb, caption='🔖id: {id}\n'.format(id=id),
+                                                     reply_markup=kb)
+                result.append(pic)  # inserts the object in the cache database
+
+            bot.answer_inline_query(inline_query.id, result, is_personal=True)
 
         else:  # if it is a normal query
-            for i in range(nload):  # this 'for' loop inserts on the 'cache_list' up to 50 objects for the query result
-                file = load[i]['file_url']  # file url
-                id = load[i]['id']  # File unique identifier in the server
-                dirc = load[i]['directory']  # Directory where it is stored in the server
-                hash = load[i]['hash']  # The hash string provided by the server
+            cache_list = []  # This is the cache database the bot will send
+            af = 0
+
+            for i in load:  # this 'for' loop inserts on the 'cache_list' up to 50 objects for the query result
+                file = i['file_url']  # file url
+                id = i['id']  # File unique identifier in the server
+                dirc = i['directory']  # Directory where it is stored in the server
+                hash = i['hash']  # The hash string provided by the server
                 thumb = "http://gelbooru.com/thumbnails/{0}/thumbnail_{1}.jpg".format(dirc, hash)  # again, the odd
                                                                                                    # thumbnail stuff
-                if file.endswith('.jpg' or '.png' or '.jpeg' or '.bmp'):  # if the file is any image
-                    kb = types.InlineKeyboardMarkup(row_width=2)
-                    kb1 = types.InlineKeyboardButton(text="💾 Download", url=file)
-                    kb2 = types.InlineKeyboardButton(text="🔍 Search more",
-                                                     switch_inline_query_current_chat=text)
-                    kb.row(kb1, kb2)
-                    r = types.InlineQueryResultPhoto(str(i), file, thumb,
+                kb = types.InlineKeyboardMarkup(row_width=2)
+                kb1 = types.InlineKeyboardButton(text="💾 Download", url=file)
+                kb2 = types.InlineKeyboardButton(text="🔍 Search more",
+                                                 switch_inline_query_current_chat=text)
+                kb.row(kb1, kb2)
+                if file.endswith('.gif'):  # if the file is gif
+                    gif = types.InlineQueryResultGif(str(int(af)), file, thumb_url=file,
                                                      caption='🔖id: {id}\n'.format(id=id),
                                                      reply_markup=kb)
-                    cache_list.append(r)  # inserts the object in the cache database
+                    cache_list.append(gif)  # inserts the object in the cache
+                else:  # if the file is any type of image
+                    pic = types.InlineQueryResultPhoto(str(int(af)), file, thumb_url=thumb,
+                                                           caption='🔖id: {id}\n'.format(id=id),
+                                                           reply_markup=kb)
+                    cache_list.append(pic)  # inserts the object in the cache
+                    
+                af += 1  # Number of id to be sent to Telegram Server
 
-                elif file.endswith('.gif'):  # if the file is gif
-                    kb = types.InlineKeyboardMarkup(row_width=2)
-                    kb1 = types.InlineKeyboardButton(text="💾 Download", url=file)
-                    kb2 = types.InlineKeyboardButton(text="🔍 Search more",
-                                                     switch_inline_query_current_chat=text)
-                    kb.row(kb1, kb2)
-                    r = types.InlineQueryResultGif(str(i), file, file, caption='🔖id: {id}\n'.format(id=id),
-                                                   reply_markup=kb)
-                    cache_list.append(r)  # inserts the object in the cache database
-                if load[i] is None:  # whenever it doesn't have anything more to be loaded and iterate,
-                    break            # it breaks the loop
-
-        b = 50 + off_set  # Complicated stuff, this is for the offset
-        bot.answer_inline_query(inline_query.id, cache_list, next_offset=b, cache_time=120,
-                                switch_pm_text="Usage help", switch_pm_parameter="tags")
+            b = 1 + off_set  # Complicated stuff, this is for the offset
+            bot.answer_inline_query(inline_query.id, cache_list, next_offset=b, cache_time=120,
+                                    switch_pm_text="Usage help", switch_pm_parameter="tags")
 
     except Exception as e:
         msg = """
@@ -629,7 +616,7 @@ def query_text(inline_query):
                                              reply_markup=key,
                                              description='Looks like you tried some tag combinations that...')
         bot.answer_inline_query(inline_query.id, [fgw])
-        print("Error here:", e)
+        print("An error occurred with the query '{0}':".format(inline_query.query), e)
         pass
 # ====================  End of Media Handling  ====================
 
