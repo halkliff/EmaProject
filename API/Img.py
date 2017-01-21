@@ -1,4 +1,4 @@
-# -*- coding: ascii -*-
+# -*- coding:ascii -*-
 
 import requests
 import random
@@ -70,25 +70,25 @@ PARAMS = {
     'password_hash':
         '&password_hash={password_hash}',
     'anime': {
-        'pid': 529934,
-        'params': '&tags=rating%3Asafe&ms=1&limit=1'},
+        'pid': list(range(329934)),
+        'params': '&tags=rating%3Asafe+-animated&ms=1&limit=1'},
     'ecchi': {
-        'pid': 572744,
-        'params': '&tags=rating%3Aquestionable+&ms=1&limit=1'},
+        'pid': list(range(272744)),
+        'params': '&tags=rating%3Aquestionable+-animated&ms=1&limit=1'},
     'loli': {
-        'pid': 117779,
-        'params': '&tags=loli+&limit=1'},
+        'pid': list(range(117779)),
+        'params': '&tags=loli+-animated&limit=1'},
     'yuri': {
-        'pid': 86580,
-        'params': '&tags=yuri+&limit=1'},
+        'pid': list(range(86580)),
+        'params': '&tags=yuri+-animated&limit=1'},
     'yaoi': {
-        'pid': 40294,
-        'params': '&tags=yaoi+&limit=1'},
+        'pid': list(range(40294)),
+        'params': '&tags=yaoi+-animated&limit=1'},
     'hentai': {
-        'pid': 492710,
-        'params': '&tags=rating%3Aexplicit&limit=1'},
+        'pid': list(range(392710)),
+        'params': '&tags=rating%3Aexplicit+-animated&limit=1'},
     'search':
-        '&limit=50&tags='
+        '&limit=50&tags=-webm+'
     }
 
 
@@ -134,22 +134,13 @@ class Requests:
 
 def post(arg=""):
     a = Requests('gelbooru', 'posts_list')
-    rpid = random.choice(range(0, PARAMS[arg]['pid']))
+    rpid = random.choice(PARAMS[arg]['pid'])
     pid = rpid
     b = a.post_list(arg, pid)
-    return b[0] # Returns a JSON object containing the matching results.
+    return b[0] if b is not None else None  # Returns a JSON object containing the matching results.
 
 
 def search_query(tags="", pid=None):
-    splt = tags.split()
-    if "rating:safe" or "rating:questionable" or "rating:explicit" in splt:
-        t = tags
-    elif "rating:e" in splt:
-        t = tags.replace("rating:e", "rating:explicit")
-    elif "rating:s" in splt:
-        t = tags.replace("rating:s", "rating:safe")
-    elif "rating:q" in splt:
-        t = tags.replace("rating:q", "rating:questionable")
 
     a = Requests('gelbooru', 'posts_list')
     if pid is None:
@@ -157,8 +148,6 @@ def search_query(tags="", pid=None):
     else:
         p = pid
 
-    b = a.query_list(t, pid=str(p))
+    b = a.query_list(tags, pid=str(p))
 
     return b  # Returns a list with JSON object containing the matching results.
-
-
