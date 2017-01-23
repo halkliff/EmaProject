@@ -15,7 +15,7 @@ To start the setup, you must do the following:
 1. **Install all the needed stuff**:</br>
 ```$ pip install PyTelegramBotAPI --upgrade```</br>
 ```$ pip install tinydb --upgrade```
-2. Open [Config.py](https://github.com/halkliff/EmaProject/blob/Beta-2/Config.py)
+2. Open [Config.py](https://github.com/halkliff/EmaProject/blob/master/Config.py)
   - Change the value of ```TOKEN``` to the token given for you by [@BotFather](https://telegram.me/botfather)
   - Change the value of ```BOT_ID``` to your own bot ID, without the "@". _NOTE: IF YOU PUT THE "@", THE BOT MIGHT NOT WORK PROPERLY_
   - Change the value of ```BOT_NAME``` to the name you want your bot to have - Yes, you can rename your bot easily with it
