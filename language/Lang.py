@@ -10,7 +10,7 @@ Lang = {
                 u'Please, send `/help` if you need, or `/commands` to see all my functions!\n'
                 u'I can work inline, so you can call me anytime you want, by typing `@EmaRobot` and writing your tags\n'
                 u'Take a look at the examples of inline usage in `/inline_help` \n\n'
-                u'BETA build no. 0.9.1',
+                u'BETA build no. 1.0.0-BETA',
             'start_reg':
                 u'Hello again *{name}*! How are you? if you need any help, see /help \n(｡･ω･｡)',
             'help':
@@ -23,6 +23,8 @@ Lang = {
                 u'/loli - Sends you a random _loli_  Picture\n'
                 u'/hentai - Sends you a random _hentai_  Picture\n'
                 u'/yuri - Sends you a random _yuri_  Picture\n'
+                u'/yaoi - Sends you a random _yaoi_ Picture\n'
+                u'/animal_ears - Sends you a random _Kemonomimi_ Picture\n'
                 u'/id - Search picture by my [Source\'s ID](t.me/{bot_id}?start=source_id)\n'
                 u'`/tag` - Search by [Tag](t.me/{bot_id}?start=tags)🚫\n\n'
                 u'You can also search me using inline! see /inline\_help for further info, sir!\n\n\n'
@@ -109,12 +111,14 @@ Lang = {
                 u'/loli - Envia imagens de _lolis_ aleatórias\n'
                 u'/hentai - Envia imagens _hentai_ aleatórias\n'
                 u'/yuri - Envia imagens de _yuri_ aleatórias\n'
+                u'/yaoi - Envia imagens de _yaoi_ aleatórias\n'
+                u'/animal_ears - Envia imagens de _Kemonomimi_ aleatórias\n'
                 u'/id - Procurar imagens pelo meu [ID de fonte](t.me/{bot_id}?start=source_id)\n'
                 u'`/tag` - Procurar por [Tag](t.me/{bot_id}?start=tags)🚫\n\n'
                 u'Você também pode me usar inline! Veja /inline\_help para mais informações, senhor!\n\n\n'
                 u'_Comandos com 🚫 ainda não estão funcionando._',
             'inline_help':
-                u'Aqui estão algumas icas para usar meu modo `inline`, senhor:\n\n'
+                u'Aqui estão algumas dicas para usar meu modo `inline`, senhor:\n\n'
                 u'1. *Usagem inline*\n'
                 u'  Para me usar inline, digite no campo de digitação `@{bot_id}`, e a mensagem\n'
                 u'  de pesquisa deve aparecer, então você pode inserir o que quer pesquisar.\n\n'
@@ -195,6 +199,8 @@ Lang = {
                     u'/loli - Te envía una imagen de _loli_  al azar\n'
                     u'/hentai - Te envía una imagen de _hentai_  al azar\n'
                     u'/yuri - Te envía una imagen de _yuri_  al azar\n'
+                    u'/yaoi - Te envía una imagen de _yaoi_ al azar\n'
+                    u'/animal_ears - Te envía una imagen de _Kemonomimi_ al azar\n'
                     u'/id - Buscar una imagen mediante las [ID de mis fuentes](t.me/{bot_id}?start=source_id)\n'
                     u'`/tag` - Buscar por [Tag](t.me/{bot_id}?start=tags)🚫\n\n'
                     u'También puedes buscar usando el modo inline! Ve /inline\_help para más información, señor!\n\n\n'
@@ -230,7 +236,7 @@ Lang = {
                     u'Solo haz lo siguiente:\n'
                     u'`@{bot_id} rating:safe tighhighs` - Esto proporcionará algunas imágenes que coincidan con las Tags `nase_yaeka` y `bra`.\n\n',
                 },
-            'keyboard': {
+        'keyboard': {
                 'buttons': {
                         'lang': '🌐 Lenguaje',
                         'notif': '🔔 Notificaciones',
@@ -281,6 +287,8 @@ Lang = {
                     u'/loli - Sendet dir ein zufälliges _loli_ Bild\n'
                     u'/hentai - Sendet dir ein zufälliges _hentai_ Bild\n'
                     u'/yuri - Sendet dir ein zufälliges _yuri_ Bild\n'
+                    u'/yaoi - Sendet dir ein zufälliges_yaoi_ Bild\n'
+                    u'/animal_ears - Sendet dir ein zufälliges _Kemonomimi_ Bild\n'
                     u'/id - Sucht Bild mittels [Quell\'s ID](t.me/{bot_id}?start=source_id)\n'
                     u'`/tag` - Sucht nach einem [Tag](t.me/{bot_id}?start=tags)🚫\n\n'
                     u'Du kannst mich auch durch die Inline-Kommandos nutzen! Schau bei /inline\_help für mehr Informationen!\n\n\n'
@@ -316,7 +324,7 @@ Lang = {
                     u'Versuche es einmal so:\n'
                     u'`@{bot_id} rating:safe tighhighs` - Dies wird dir ein paar Bilder mit den Suchbegriffen `nase_yaeka` und `bra` liefern.\n\n',
                 },
-            'keyboard': {
+        'keyboard': {
                 'buttons': {
                         'lang': '🌐 Sprache',
                         'notif': '🔔 Benachrichtigungen',
@@ -367,6 +375,8 @@ Lang = {
                 u'/loli - Отправит тебе произвольное _лолли_  изображение. Будь осторожен, сэнпай. На территории РФ за такое может и влететь\n'
                 u'/hentai - Отправит тебе произвольное _Хентай_  изображение\n'
                 u'/yuri - Отправит тебе произвольное _Юри_  изображение\n'
+                u'/yaoi - Отправит тебе произвольное _yaoi_ изображениеe\n'
+                u'/animal_ears - Отправит тебе произвольное _Kemonomimi_ изображениеe\n'
                 u'/id - Будет искать изображение исходя из [ID источника](t.me/{bot_id}?start=source_id)\n'
                 u'`/tag` - Искать по [тэгу](t.me/{bot_id}?start=tags)🚫\n\n'
                 u'Ты так же можешь выполнить поиск используя меня в режиме inline! Глянь /inline\_help чтобы узнать больше, сэнпай!\n\n\n'
@@ -454,6 +464,8 @@ Lang = {
                     u'/loli - Invia un immagine _loli_  a caso\n'
                     u'/hentai - Invia un immagine _hentai_  a caso\n'
                     u'/yuri - Invia un immagine _yuri_  a caso\n'
+                    u'/yaoi - Invia un immagine _yaoi_ a caso\n'
+                    u'/animal_ears - Invia un immagine _Kemonomimi_ a caso\n'
                     u'/id - Cerca un immagine tramite il mio [Source\'s ID](t.me/{bot_id}?start=source_id)\n'
                     u'`/tag` - Cerca per [Tag](telegram.me/{bot_id}?start=tags)🚫\n\n'
                     u'Puoi anche cercare tramite l\'inline! Vedi /inline\_help per altre informazioni, sir!\n\n\n'
@@ -489,7 +501,7 @@ Lang = {
                     u'Prova a fare questo:\n'
                     u'`@{bot_id} rating:safe tighhighs` - Ritornerà alcune immagini che corrispondono ai tag `nase_yaeka` and `bra`.\n\n',
                 },
-            'keyboard': {
+                'keyboard': {
                 'buttons': {
                         'lang': '🌐 Lingua',
                         'notif': '🔔 Notifiche',
@@ -520,18 +532,11 @@ Lang = {
                 }
             },
 }
-# u'/yaoi - Sends you a random _yaoi_ Picture'
-      #  u'`/cosplay` - Sends you a random _cosplay_  Picture 🚫\n'
-      #  u'`/ecosplay` - Sends you a random _ero cosplay_  Picture 🚫\n'
 
-"""
-u'4. *Specific Search*\n'
-    u'  Sir, you can make specific searchs to find what type of file you\n'
-    u'  want! see some usage examples:\n'
-    u'  - `@{bot_id} pic [tags]`: This will send you only pics about the tag\n'
-    u'  - `@{bot_id} vid [tags]`: This will send you only videos about the tag\n'
-    u'  - `@{bot_id} gif [tags]`: This will send you only GIFs about the tag\n\n'
-"""
-
-if __name__=="__main__":
-    print("imported!")
+msg = {'msg': u'*File Info:*\n\n'
+              u'🎴 *File ID*: {id}\n'
+              u'⛓ *Has Parent Post*: {parent_post}\n'
+              u'🖥 *Resolution*: {W} x {H}\n'
+              u'👤 *Owner*: _{Owner}_\n'
+              u'📋 *Rating*: _{rating}_\n'
+              u'🏷 *Tags*: `{tags}`'}
