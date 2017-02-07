@@ -23,6 +23,10 @@ def new_user(from_user_username, from_user_id, from_user_language):
                        'notif': "Yes",
                        'user_is_premium': "No",
                        'user_blocked': "No"})
+    favs_table.insert({'id': from_user_id,
+                       'limit': 500,
+                       'favorites': []})
+                       
 
 
 def user_search(from_user_id):
