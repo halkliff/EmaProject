@@ -26,7 +26,6 @@ def new_user(from_user_username, from_user_id, from_user_language):
     favs_table.insert({'id': from_user_id,
                        'limit': 500,
                        'favorites': []})
-                       
 
 
 def user_search(from_user_id):
@@ -41,19 +40,31 @@ def user_search(from_user_id):
 
 
 def broadcast_append(cache_list):
-    a = user_table.all()
+    user = Query()
+    a = user_table.search(user.notif == "Yes")
     for i in a:
-        cache_list.append(i['id'])
+        if i['user_blocked'] == "No":
+            cache_list.append(i['id'])
+
+        else:
+            pass
+
+
+def regis_users(cache_list):
+    a = user_table.all()
+
+    for i in a:
+        cache_list.append(i["id"])
 
 
 def mature_enabled_users(cache_list):
-    a = []
-    broadcast_append(a)
+    user = Query()
+    a = user_table.search(user.nsfw == "Yes")
 
-    for id in a:
-        b = user_search(id)["nsfw"]
-        if b == "Yes":
-            cache_list.append(id)
+    for i in range(len(a)):
+
+        cache_list.append(a[i]["id"])
+        print("Added ID: {0} | {1}".format(a[i]["id"], i))
 
 
 def update_user_language(from_user_id, choice="Language"):
@@ -179,9 +190,8 @@ def get_stats():
 
 
 def update_registered_users():
-    user = Query()
 
-    a = user_table.count(user.id is not None)
+    a = len(user_table.all())
 
     stats_table.update({'registered_users': int(a)}, eids=[1])
 
@@ -225,6 +235,4 @@ def update_inline_processed():
     b = a + 1
 
     stats_table.update({'inline_processed': int(b)}, eids=[1])
-
 # ============================================= End of Statistics Funcs ==============================================
-
