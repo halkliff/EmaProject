@@ -12,7 +12,7 @@ the PyTelegramBotAPI, by etnoir: https://github.com/eternnoir/pyTelegramBotAPI/b
 """
 
 __author__ = "Halk Liff <HalkLiff@protonmail.ch>"
-__version__ = "1.x-Beta-10"
+__version__ = "1.0.1"
 __url__ = "https://github.com/halkliff/EmaProject"
 __contacts__ = """Telegram: https://telegram.me/MrHalk
                   Email: HalkLiff@protonmail.ch"""
