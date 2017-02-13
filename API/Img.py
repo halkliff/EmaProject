@@ -142,8 +142,7 @@ class Requests:
 
 def post(arg=""):
     a = Requests('gelbooru', 'posts_list')
-    rpid = random.choice(PARAMS[arg]['pid'])
-    pid = rpid
+    pid = random.choice(PARAMS[arg]['pid'])
     b = a.post_list(arg, pid)
     return b[0] if b is not None else None  # Returns a JSON object containing the matching results.
 
@@ -155,6 +154,13 @@ def search_query(tags="", pid=None):
     else:
         p = pid
 
-    b = a.query_list(tags, pid=str(p))
+    if tags == "":
+        search = "rating:safe"
+
+    else:
+        search = tags
+
+    b = a.query_list(search, pid=str(p))
 
     return b  # Returns a list with JSON object containing the matching results.
+
