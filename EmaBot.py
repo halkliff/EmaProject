@@ -1,27 +1,28 @@
-# _||_ Code Test number 22 _||_
+# _||_ Code Test number 23 _||_
 # Exclusive use
 
 import telebot
 from telebot import types
-import logging
-import time
-import sys
+import logging, time, sys, os
+
 from API import Img
 from language import Lang
 import Config
-import os
 from database import Data
 
 # ================================================== Start of caches ==================================================
+registered_users = []
 broadcast_ids = []
 nsfw_ids = []
+Data.regis_users(registered_users)
 Data.broadcast_append(broadcast_ids)  # This will bring to the broadcast_ids all ids.
-Data.mature_enabled_users(nsfw_ids)  #This will cache users that enabled mature content, for speed purposes
+Data.mature_enabled_users(nsfw_ids)
 
 # =================================================== End of caches ===================================================
 
 # Bot Token taken by @BotFather
 TOKEN = Config.TOKEN
+
 
 # Listener to see when new messages arrives
 def listener(messages):
@@ -41,6 +42,7 @@ bot.set_update_listener(listener)  # register listener
 
 logger = telebot.logger  # set logger
 telebot.logger.setLevel(logging.DEBUG)  # Outputs debug messages to console.
+
 
 # Deep linking function
 def deep_link(text):
@@ -72,6 +74,21 @@ def send_welcome(m):
                 print("An error occurred on inline parameter 'share':", e)
                 pass
 
+        elif dp_link.startswith("id:"):
+            search_id = dp_link.split(":")[1]
+            id_handler(m, cid, search_id)
+
+        elif dp_link == "activate_membership":
+            keyboard = telebot.types.InlineKeyboardMarkup(row_width=2)
+            btn = telebot.types.InlineKeyboardButton("Accept", callback_data="accept_member {id}".format(id=str(cid)))
+            btn2 = telebot.types.InlineKeyboardButton("Decline", callback_data="decline_member {id}".format(id=str(cid)))
+            bot.send_message(cid, "Pending moderator approval.")
+
+            keyboard.row(btn, btn2)
+            bot.send_message(Config.MASTER_ID, "User {n} ID: {i} requested membership.".format(n=m.from_user.first_name,
+                                                                                               i=str(cid)),
+                             reply_markup=keyboard)
+
         else:
             try:
                 lang = match['language']  # If the user exists, gets it's desired language
@@ -96,6 +113,11 @@ def send_welcome(m):
                                                                                     bot_name=Config.BOT_NAME),
                              parse_mode='markdown', reply_markup=ky)
                 broadcast_ids.append(str(cid))
+                registered_users.append(str(cid))
+                Data.update_registered_users()
+                Data.update_muted_users()
+                Data.update_subscribed_users()
+                Data.update_blocked_users()
             except Exception as e:
                 raise Exception(e)
                 pass
@@ -107,6 +129,10 @@ def send_welcome(m):
 
                 bot.reply_to(m, Lang.Lang[lang]['CommandText']['start_reg'].format(name=m.from_user.first_name),
                              parse_mode='markdown', reply_markup=ky)
+                Data.update_registered_users()
+                Data.update_muted_users()
+                Data.update_subscribed_users()
+                Data.update_blocked_users()
             except Exception as e:
                 print("An error occurred when processing the start_reg:", e)
                 pass
@@ -148,22 +174,7 @@ def send_help(m):
 
 @bot.message_handler(commands=['about'])  # sends an message with info about the bot
 def send_about(m):                        # It is interesting to change it to your own info
-    msg = """Emα Project
-Emα is your personal Eastern Media Assistant, and can help you
-fetching content you like from the most famous websites.
-*Github repo:* [Emα Project](https://github.com/halkliff/EmaProject)
-*Bot Version:* `0.9.4.3` - [Changelog](https://t.me/EmaProject/27)
-*API Version:* `2.3.1`
-
-
-Created, programmed and designed by @Mrhalk
-Supported by @DanialNoori94
-
-        *POWERED BY:*
-         👁‍🗨_@Hαlks_*NET*
-    _Eastern Media Network_
-        t.me/HalksNET
-"""
+    msg = """Replace me"""
     bot.reply_to(m, msg, parse_mode='markdown')
 
 
@@ -209,19 +220,34 @@ def settings(m):
 
 @bot.message_handler(commands=['broadcast'])
 def broadcast(m):
-
     kb = types.InlineKeyboardMarkup()
-    kb1 = types.InlineKeyboardButton("Click here", callback_data='broadcast_test')
+    kb1 = types.InlineKeyboardButton("Ok!", callback_data='broadcast_test2')
     kb.add(kb1)
-    for id in broadcast_ids:
-        count = 0
-        bot.send_message(id, "Broadcast test, please click in the button below if you receive this message.",
-                         reply_markup=kb)
-        count += 1
+    max = 10
+    ttl = 100
 
-        if count >= 20:
-            print('sleeping')
-            time.sleep(3)
+    msg = ""
+    for i in range(len(broadcast_ids)):
+
+        try:
+            bot.send_message(broadcast_ids[i],
+                             "Hi! I'm just trying to say here that my new functions are almost ready!\n\n And I'm really sorry for all the inconvenience >.<",
+                             reply_markup=kb)
+        except Exception as e:
+            print(e)
+            Data.toggle_stat_user_blocked(id)
+        if i == max:
+            if max == ttl:
+
+                print("Sleeping longer...")
+                time.sleep(10)
+                ttl += 100
+
+            else:
+                print("Sleeping...")
+                time.sleep(2)
+
+            max += 10
             continue
 
 
@@ -229,8 +255,8 @@ def broadcast(m):
 def updt_broadcast(call):
     if call.message:
         if call.data:
-            bot.send_message(chat_id=call.message.chat.id, text="Thanks!", reply_to_message_id=call.message.message_id)
-            bot.send_message(chat_id=Config.MASTER_ID, text="User confirmed")
+            bot.edit_message_text("Thank you!", call.message.chat.id, call.message.message_id)
+            bot.send_message(Config.MASTER_ID, "User {0} Confirmed!".format(call.from_user.first_name))
 
 
 langs = ['🌐 Language', '🌐 Idioma', '🌐 Lenguaje', '🌐 Sprache', '🌐 Язык', '🌐 Lingua']
@@ -325,6 +351,9 @@ def chosen_notif(m):
 
         k = types.ReplyKeyboardRemove(selective=False)
         bot.reply_to(m, msg, reply_markup=k)
+        Data.update_subscribed_users()
+        Data.update_muted_users()
+
     except Exception as e:
         bot.reply_to(m, 'Ops, something went wrong. Please try again with /notif')
         print("An error occurred when processing 'notif_prefs':", e)
@@ -344,11 +373,11 @@ def send_prefs(m):
         kbtn1 = types.InlineKeyboardButton("Tap to enable Mature Content", callback_data="enable_nsfw")
         kbtn2 = types.InlineKeyboardButton("Tap to disable Mature Content", callback_data="disable_nsfw")
         if pref == 'Yes':  # If the user already has notifications on, it turns off
-            btn = kbtn1
-            msg = "Mature content Preference.\n Your current status is: `Disabled`"
-        else:  # If the user has notifications off, it turns on
             btn = kbtn2
             msg = "Mature content Preference.\n Your current status is: `Enabled`"
+        else:  # If the user has notifications off, it turns on
+            btn = kbtn1
+            msg = "Mature content Preference.\n Your current status is: `Disabled`"
         kb.add(btn)
         try:
             bot.reply_to(m, msg, parse_mode='markdown', reply_markup=kb)
@@ -386,6 +415,7 @@ def chosen_prefs(call):
                             "please use the command /prefs and disable it!"
                     bot.answer_callback_query(call.id, text=alert, show_alert=True)
                 bot.edit_message_text(msg, cid, call.message.message_id, reply_markup=kb)
+
 
             except Exception as e:
                 bot.send_message(cid, 'Ops, something went wrong. Please try again with /prefs')
@@ -434,72 +464,368 @@ def send_inline_help(m):
 
 
 # ============================================== Start of Media Handling ==============================================
+def media_handler(m, cid, load_media):
+    try:
+        bot.send_chat_action(cid, 'upload_photo')  # Sends "uploading photo" chat action
+
+        load = Img.post(load_media)  # Loads the json object with the query
+
+        file = 'http:' + load['file_url']  # The picture url
+
+        id = load['id']  # The picture unique identifier, on the server
+
+        keyboard = telebot.types.InlineKeyboardMarkup(row_width=4)
+        button = telebot.types.InlineKeyboardButton(text="💾", url=file)  # Download button
+        button2 = telebot.types.InlineKeyboardButton(text="➕",
+                                                     callback_data=
+                                                     load_media + " id={0}".format(id) + ' fav=No')  # load more
+        button3 = telebot.types.InlineKeyboardButton(text="🔘", switch_inline_query="id:{0}".format(id))  # Share
+        button4 = telebot.types.InlineKeyboardButton(text="⭐️",
+                                                     callback_data=
+                                                     'favorite_add={id}&media={md}'.format(id=id, md=load_media))
+        button5 = telebot.types.InlineKeyboardButton(text="ℹ️", callback_data="info={id}".format(id=id))
+
+        try:
+            keyboard.row(button, button3, button5, button4)
+            keyboard.add(button2)
+            if file.endswith('.gif'):
+                bot.send_document(cid, file, caption='🎴ID: {id}\n'.format(id=id), reply_markup=keyboard)
+
+            else:
+                bot.send_photo(cid, file, caption='🎴ID: {id}\n'.format(id=id), reply_markup=keyboard)
+
+            Data.update_media_processed()
+        except Exception as e:
+            retry_keyboard = telebot.types.InlineKeyboardMarkup()
+            retry_button = telebot.types.InlineKeyboardButton(text="🔄 Retry", callback_data=load_media)
+            retry_keyboard.add(retry_button)
+
+            bot.reply_to(m, "Sorry!\n`An unexpected error occurred when processing your request`.\nTry again?",
+                         parse_mode='markdown', reply_markup=retry_keyboard)
+            print("An error Occurred in /{0}:".format(load_media), e)
+            pass
+    except Exception as e:
+        retry_keyboard = telebot.types.InlineKeyboardMarkup()
+        retry_button = telebot.types.InlineKeyboardButton(text="🔄 Retry", callback_data=load_media)
+        retry_keyboard.add(retry_button)
+
+        bot.reply_to(m, "Sorry!\n`An unexpected error occurred when processing your request`.\nTry again?",
+                     parse_mode='markdown', reply_markup=retry_keyboard)
+        print("An Error occurred when loading '{0}' dict:".format(load_media), e)
+        pass
+
+
+def inline_media_handler(call, cid, param, call_id, has_favorited):
+    try:
+        bot.send_chat_action(cid, 'upload_photo')  # Sends "uploading photo" chat action
+
+        load = Img.post(param)  # Loads the json object with the query
+
+        file = 'http:' + load['file_url']  # The picture url
+
+        id = load['id']  # The picture unique identifier, on the server
+
+
+        keyboard = telebot.types.InlineKeyboardMarkup(row_width=3)
+        button = telebot.types.InlineKeyboardButton(text="💾", url=file)  # Download button
+        button2 = telebot.types.InlineKeyboardButton(text="➕",
+                                                     callback_data=param+" id={0}".format(id)+' fav=No')  # load more
+        button3 = telebot.types.InlineKeyboardButton(text="🔘",
+                                                     switch_inline_query="id:{0}".format(id))  # Share
+        button4 = telebot.types.InlineKeyboardButton(text="⭐️",
+                                                     callback_data=
+                                                     'favorite_add={id}&media={md}'.format(id=id, md=param))
+        button5 = telebot.types.InlineKeyboardButton(text="ℹ️", callback_data="info={id}".format(id=id))
+
+        try:
+            keyboard.row(button, button3, button5, button4)
+            keyboard.add(button2)
+
+            if file.endswith('.gif'):
+                bot.send_document(cid, file, caption='🎴ID: {id}\n'.format(id=id), reply_markup=keyboard)
+
+            else:
+                bot.send_photo(cid, file, caption='🎴ID: {id}\n'.format(id=id), reply_markup=keyboard)
+
+            Data.update_media_processed()
+
+        except Exception as e:
+            retry_keyboard = telebot.types.InlineKeyboardMarkup()
+            retry_button = telebot.types.InlineKeyboardButton(text="🔄 Retry", callback_data=call.data)
+            retry_keyboard.add(retry_button)
+
+            bot.send_message(cid,
+                             "Sorry!\n`An unexpected error occurred when processing your request`.\nTry again?",
+                             parse_mode='markdown', reply_markup=retry_keyboard)
+            print("An Error occurred in 'more {0}':".format(call.data), e)
+            pass
+
+        try:
+            load = Img.search_query("id:{0}".format(call_id))  # Loads the json object with the query
+
+            file = 'http:' + load[0]['file_url']  # The picture url
+
+            keyboard = telebot.types.InlineKeyboardMarkup(row_width=3)
+            button = telebot.types.InlineKeyboardButton(text="💾", url=file)  # Download button
+            button3 = telebot.types.InlineKeyboardButton(text="🔘",
+                                                         switch_inline_query='id:{0}'.format(call_id))  # Share
+            button41 = telebot.types.InlineKeyboardButton(text="⭐️",
+                                                          callback_data='favorite_add={id}'.format(id=call_id))
+            button42 = telebot.types.InlineKeyboardButton(text="🌟",
+                                                          callback_data='favorite_del={id}'.format(id=call_id))
+            button5 = telebot.types.InlineKeyboardButton(text="ℹ️", callback_data="info={id}".format(id=call_id))
+
+            if has_favorited == "Yes":
+                keyboard.row(button, button3, button5, button42)
+
+            else:
+                keyboard.row(button, button3, button5, button41)
+
+            bot.edit_message_reply_markup(cid, call.message.message_id, reply_markup=keyboard)
+
+        except Exception as e:
+            msg = "Woops, I couldn't update your buttons, but don't worry! Your favorite was saved."
+            bot.answer_callback_query(call.id, text=msg, show_alert=True)
+            print("An Error occurred when tried to update the fav_btn:", e)
+            pass
+
+    except Exception as e:
+        retry_keyboard = telebot.types.InlineKeyboardMarkup()
+        retry_button = telebot.types.InlineKeyboardButton(text="🔄 Retry", callback_data=call.data)
+        retry_keyboard.add(retry_button)
+
+        bot.send_message(cid,
+                         "Sorry!\n`An unexpected error occurred when processing your request`.\nTry again?",
+                         parse_mode='markdown', reply_markup=retry_keyboard)
+        print("An Error occurred when loading '{0}' dict:".format(call.data), e)
+        pass
+
+
+def fav_add(call, cid, match, load_media, id):
+    try:
+        if id in match:
+            bot.answer_callback_query(call.id, text="This file is already on favorites.")
+        else:
+            Data.add_favorites(str(cid), id)
+            bot.answer_callback_query(call.id, text="Added to favorites")
+
+        try:
+            load = Img.search_query("id:{0}".format(id))  # Loads the json object with the query
+
+            file = 'http:' + load[0]['file_url']  # The picture url
+
+            keyboard = telebot.types.InlineKeyboardMarkup(row_width=3)
+            button = telebot.types.InlineKeyboardButton(text="💾", url=file)  # Download button
+            button2 = telebot.types.InlineKeyboardButton(text="➕",
+                                                         callback_data=load_media+" id={0}".format(id)+' fav=Yes')  # load more
+            button3 = telebot.types.InlineKeyboardButton(text="🔘",
+                                                         switch_inline_query='id:{0}'.format(id))  # Share
+            button41 = telebot.types.InlineKeyboardButton(text="🌟",
+                                                          callback_data='favorite_del={id}'.format(id=id))
+            button42 = telebot.types.InlineKeyboardButton(text="🌟",
+                                                          callback_data='favorite_del={id}&media={md}'.format(
+                                                              id=id,
+                                                              md=load_media))
+            button5 = telebot.types.InlineKeyboardButton(text="ℹ️", callback_data="info={id}".format(id=id))
+
+            if load_media.startswith("True"):
+
+                redo_btn = telebot.types.InlineKeyboardButton(text="❌",
+                                                              callback_data=
+                                                              "favorite_del={id}&fav_command=True".format(
+                                                                  id=id))
+
+                button2 = telebot.types.InlineKeyboardButton(text="🔘",
+                                                             switch_inline_query="id:{0}".format(id))  # Share
+                button3 = telebot.types.InlineKeyboardButton(text="ℹ️", callback_data="info={id}".format(id=id))
+
+                if load_media.startswith("TrueNEXT"):
+                    obj = load_media.split(":")[1]
+                    button = telebot.types.InlineKeyboardButton(text=">>",
+                                                                callback_data=
+                                                                'load_fav {0} id:{1}'.format(obj,
+                                                                                             id))  # load more
+                    button4 = telebot.types.InlineKeyboardButton(text="❌",
+                                                                 callback_data=
+                                                                 "favorite_del={id}&fav_command=TrueNEXT:{obj}".format(
+                                                                     id=id, obj=obj))
+                    keyboard.row(button2, button3)
+                    keyboard.add(button4)
+                    keyboard.add(button)
+
+                else:
+                    keyboard.row(button2, button3)
+                    keyboard.add(redo_btn)
+                bot.edit_message_caption(caption="File ID: {0} add back to your favorites".format(id),
+                                         message_id=call.message.message_id, chat_id=cid,
+                                         reply_markup=keyboard)
+
+            else:
+                if load_media == "":
+                    keyboard.row(button, button3, button5, button41)
+
+                else:
+                    keyboard.row(button, button3, button5, button42)
+                    keyboard.add(button2)
+
+                bot.edit_message_reply_markup(cid, call.message.message_id, reply_markup=keyboard)
+
+        except Exception as e:
+            msg = "Woops, I couldn't update your buttons, but don't worry! Your favorite was saved."
+            bot.answer_callback_query(call.id, text=msg, show_alert=True)
+            print("An Error occurred when tried to update the fav_btn:", e)
+            pass
+
+    except ValueError:
+        msg = "You already reached your limit of favorites! Go to /favorites to remove some, or" \
+              "contact @MrHalk for a premium account!"
+
+        bot.answer_callback_query(call.id, text=msg, show_alert=True)
+
+    except Exception as e:
+        msg = "Woops, something went wrong! Please try to add this favorite again."
+        bot.answer_callback_query(call.id, text=msg, show_alert=True)
+        print("An Error occurred when tried to add a favorite for the user {0}:".format(cid), e)
+        pass
+
+
+def fav_del(call, cid, match, load_media, id):
+    try:
+        if id not in match:
+            bot.answer_callback_query(call.id, text="This file was already removed from favorites.")
+        else:
+            Data.del_favorites(str(cid), id)
+            bot.answer_callback_query(call.id, text="Removed from favorites")
+
+        try:
+            load = Img.search_query("id:{0}".format(id))  # Loads the json object with the query
+
+            file = 'http:' + load[0]['file_url']  # The picture url
+
+            keyboard = telebot.types.InlineKeyboardMarkup(row_width=3)
+            button = telebot.types.InlineKeyboardButton(text="💾", url=file)  # Download button
+            button2 = telebot.types.InlineKeyboardButton(text="➕",
+                                                         callback_data=load_media+" id={0}".format(id)+' fav=No')  # load more
+            button3 = telebot.types.InlineKeyboardButton(text="🔘",
+                                                         switch_inline_query='id:{0}'.format(id))  # Share
+            button41 = telebot.types.InlineKeyboardButton(text="⭐️",
+                                                          callback_data='favorite_add={id}'.format(id=id))
+            button42 = telebot.types.InlineKeyboardButton(text="⭐️",
+                                                          callback_data='favorite_add={id}&media={md}'.format(
+                                                              id=id,
+                                                              md=load_media))
+            button5 = telebot.types.InlineKeyboardButton(text="ℹ️", callback_data="info={id}".format(id=id))
+
+            if load_media.startswith("True"):
+
+                if load_media.startswith("TrueNEXT"):
+                    obj = load_media.split(":")[1]
+                    undo_btn = telebot.types.InlineKeyboardButton(text="Undo",
+                                                                  callback_data=
+                                                                  "favorite_add={id}&fav_command=TrueNEXT:{obj}".format(
+                                                                      id=id, obj=obj))
+
+                    next_button = telebot.types.InlineKeyboardButton(text=">>",
+                                                                     callback_data=
+                                                                     'load_fav {0} id:{1} is_deleted'.format(
+                                                                         obj,
+                                                                         id))  # load more
+                    keyboard.add(undo_btn)
+                    keyboard.add(next_button)
+                else:
+                    undo_btn = telebot.types.InlineKeyboardButton(text="Undo",
+                                                                  callback_data=
+                                                                  "favorite_add={id}&fav_command=True".format(
+                                                                      id=id))
+                    keyboard.add(undo_btn)
+
+                bot.edit_message_caption(caption="File ID: {0} removed from your favorites".format(id),
+                                         message_id=call.message.message_id, chat_id=cid,
+                                         reply_markup=keyboard)
+
+            else:
+                if load_media == "":
+                    keyboard.row(button, button3, button5, button41)
+
+                else:
+                    keyboard.row(button, button3, button5, button42)
+                    keyboard.add(button2)
+
+                bot.edit_message_reply_markup(cid, call.message.message_id, reply_markup=keyboard)
+
+        except Exception as e:
+            msg = "Woops, I couldn't update your buttons, but don't worry! Your favorite was saved."
+            bot.answer_callback_query(call.id, text=msg, show_alert=True)
+            print("An Error occurred when tried to update the fav_btn:", e)
+            pass
+
+    except Exception as e:
+        msg = "Woops, something went wrong! Please try to remove this favorite again."
+        bot.answer_callback_query(call.id, text=msg, show_alert=True)
+        print("An Error occurred when tried to remove a favorite for the user {0}:".format(cid), e)
+        pass
+
+
+def id_handler(m, cid, dp_link):
+    try:
+        bot.send_chat_action(cid, 'upload_document')  # Sends "uploading photo" chat action
+
+        load = Img.search_query("id:{0}".format(dp_link))  # Loads the json object with the query
+
+        file = 'http:' + load[0]['file_url']  # The picture url
+
+        id = load[0]['id']  # The picture unique identifier, on the server
+
+        keyboard = telebot.types.InlineKeyboardMarkup(row_width=4)
+        btn = telebot.types.InlineKeyboardButton(text="💾", url=file)  # Download button
+        btn2 = telebot.types.InlineKeyboardButton(text="🔘", switch_inline_query="id:{0}".format(id))  # Share
+        btn3 = telebot.types.InlineKeyboardButton(text="⭐️", callback_data='favorite_add={id}'.format(id=id, ))
+        btn4 = telebot.types.InlineKeyboardButton(text="ℹ️", callback_data="info={id}".format(id=id))
+
+        try:
+            keyboard.add(btn, btn2, btn4, btn3)
+            if file.endswith('.gif'):
+                bot.send_document(cid, file, caption='🎴ID: {id}\n'.format(id=id), reply_markup=keyboard)
+                """elif file.endswith('.webm'):  # picture.endswith('.mp4'):
+                bot.send_message(cid, '[🔖]({file})id: {id}\n'.format(id=id, file=file))"""
+
+            else:
+                bot.send_photo(cid, file, caption='🎴ID: {id}\n'.format(id=id), reply_markup=keyboard)
+
+            Data.update_media_processed()
+        except Exception as e:
+            bot.reply_to(m, "Sorry!\n`An unexpected error occurred when processing your request`.",
+                         parse_mode='markdown')
+            print("An error Occurred in /id {0}:".format(dp_link), e)
+            pass
+
+    except Exception as e:
+        bot.reply_to(m, "Sorry!\n`An unexpected error occurred when processing your request`.",
+                     parse_mode='markdown')
+        print("An Error occurred when loading 'id' dict:", e)
+        pass
+
+
 cmnd_list = ['anime', 'ecchi', 'hentai', 'loli', 'yuri', 'sweater_dress', 'yaoi', 'animal_ears']
 @bot.message_handler(commands=cmnd_list)
 def send_media(m):  # All the available media commands
     cid = m.chat.id  # Chat unique identifier
     load_media = m.text.replace("/", "")  # Removes the "/" from the command, so it gets as a normal word
-    if load_media is not 'anime' or 'animal_ears':
-        if str(cid) not in nsfw_ids:
-            msg = "You are trying to use a Not Safe For Work command, but your configuration has\n" \
-                  "disabled mature content! To use this command, you should first enable\n" \
-                  "mature content view in /preferences."
-            bot.send_message(cid, msg)
+    if str(cid) not in registered_users:
+        bot.reply_to(m, "Ooops, looks like you're not registered. Please tap /start to register.")
+    
+    else:
+        if load_media not in ['anime', 'animal_ears']:
+            if str(cid) not in nsfw_ids:
+                msg = "You are trying to use a Not Safe For Work command, but your configuration has\n" \
+                      "disabled mature content! To use this command, you should first enable\n" \
+                      "mature content view in /preferences."
+                bot.send_message(cid, msg)
+            else:
+                media_handler(m, cid, load_media)
+    
         else:
-            try:
-                bot.send_chat_action(cid, 'upload_photo')  # Sends "uploading photo" chat action
-
-                load = Img.post(load_media)  # Loads the json object with the query
-
-                file = load['file_url']  # The picture url
-
-                id = load['id']  # The picture unique identifier, on the server
-
-                dirc = load['directory']
-
-                img = load['image']
-
-                download_url = 'http://gelbooru.com/images/{dirc}/{img}'.format(dirc=dirc, img=img)
-
-                keyboard = telebot.types.InlineKeyboardMarkup(row_width=4)
-                button = telebot.types.InlineKeyboardButton(text="💾", url=download_url)  # Download button
-                button2 = telebot.types.InlineKeyboardButton(text="➕",
-                                                             callback_data=
-                                                             load_media + " id={0}".format(id) + ' fav=No')  # load more
-                button3 = telebot.types.InlineKeyboardButton(text="🔘", switch_inline_query="id:{0}".format(id))  # Share
-                button4 = telebot.types.InlineKeyboardButton(text="⭐️",
-                                                             callback_data=
-                                                             'favorite_add={id}&media={md}'.format(id=id, md=load_media))
-                button5 = telebot.types.InlineKeyboardButton(text="ℹ️", callback_data="info={id}".format(id=id))
-
-                try:
-                    keyboard.row(button, button3, button5, button4)
-                    keyboard.add(button2)
-                    if file.endswith('.gif'):
-                        bot.send_document(cid, download_url, caption='🎴ID: {id}\n'.format(id=id), reply_markup=keyboard)
-
-                    else:
-                        bot.send_photo(cid, download_url, caption='🎴ID: {id}\n'.format(id=id), reply_markup=keyboard)
-
-                    Data.update_media_processed()
-                except Exception as e:
-                    retry_keyboard = telebot.types.InlineKeyboardMarkup()
-                    retry_button = telebot.types.InlineKeyboardButton(text="🔄 Retry", callback_data=load_media)
-                    retry_keyboard.add(retry_button)
-
-                    bot.reply_to(m, "Sorry!\n`An unexpected error occurred when processing your request`.\nTry again?",
-                                 parse_mode='markdown', reply_markup=retry_keyboard)
-                    print("An error Occurred in /{0}:".format(load_media), e)
-                    pass
-            except Exception as e:
-                retry_keyboard = telebot.types.InlineKeyboardMarkup()
-                retry_button = telebot.types.InlineKeyboardButton(text="🔄 Retry", callback_data=load_media)
-                retry_keyboard.add(retry_button)
-
-                bot.reply_to(m, "Sorry!\n`An unexpected error occurred when processing your request`.\nTry again?",
-                             parse_mode='markdown', reply_markup=retry_keyboard)
-                print("An Error occurred when loading '{0}' dict:".format(load_media), e)
-                pass
+            media_handler(m, cid, load_media)
 
 
 @bot.message_handler(commands=['tag', 'tags'])
@@ -511,52 +837,15 @@ def send_tag(m):
 def send_id_query(m):
     cid = m.chat.id  # Chat unique identifier
     dp_link = deep_link(m.text)
-    if dp_link is None:  # if /id has not a parameter
-        bot.reply_to(m, "Usage:\n `/id [num]` - the num is any number from `1` to `3284774`.", parse_mode='markdown')
+
+    if str(cid) not in registered_users:
+        bot.reply_to(m, "Ooops, looks like you're not registered. Please tap /start to register.")
+
     else:
-
-        try:
-            bot.send_chat_action(cid, 'upload_document')  # Sends "uploading photo" chat action
-
-            load = Img.search_query("id:{0}".format(dp_link))  # Loads the json object with the query
-            file = load[0]['file_url']  # The picture url
-
-            id = load[0]['id']  # The picture unique identifier, on the server
-
-            dirc = load[0]['directory']
-
-            img = load[0]['image']
-
-            download_url = 'http://gelbooru.com/images/{dirc}/{img}'.format(dirc=dirc, img=img)
-
-            keyboard = telebot.types.InlineKeyboardMarkup(row_width=4)
-            btn = telebot.types.InlineKeyboardButton(text="💾", url=download_url)  # Download button
-            btn2 = telebot.types.InlineKeyboardButton(text="🔘", switch_inline_query="id:{0}".format(id))  # Share
-            btn3 = telebot.types.InlineKeyboardButton(text="⭐️", callback_data='favorite_add={id}'.format(id=id,))
-            btn4 = telebot.types.InlineKeyboardButton(text="ℹ️", callback_data="info={id}".format(id=id))
-
-            try:
-                keyboard.add(btn, btn2, btn4, btn3)
-                if file.endswith('.gif'):
-                    bot.send_document(cid, download_url, caption='🎴ID: {id}\n'.format(id=id), reply_markup=keyboard)
-                    """elif file.endswith('.webm'):  # picture.endswith('.mp4'):
-                    bot.send_message(cid, '[🔖]({file})id: {id}\n'.format(id=id, file=file))"""
-
-                else:
-                    bot.send_photo(cid, download_url, caption='🎴ID: {id}\n'.format(id=id), reply_markup=keyboard)
-
-                Data.update_media_processed()
-            except Exception as e:
-                bot.reply_to(m, "Sorry!\n`An unexpected error occurred when processing your request`.",
-                             parse_mode='markdown')
-                print("An error Occurred in /id {0}:".format(dp_link), e)
-                pass
-
-        except Exception as e:
-            bot.reply_to(m, "Sorry!\n`An unexpected error occurred when processing your request`.",
-                         parse_mode='markdown')
-            print("An Error occurred when loading 'id' dict:", e)
-            pass
+        if dp_link is None:  # if /id has not a parameter
+            bot.reply_to(m, "Usage:\n `/id [num]` - the num is any number from `1` to `3284774`.", parse_mode='markdown')
+        else:
+            id_handler(m, cid, dp_link)
 
 
 load_type = ['anime', 'ecchi', 'loli', 'hentai', 'yuri', 'sweater_dress', 'yaoi', 'animal_ears']
@@ -570,99 +859,18 @@ def media_callback(call):                                                       
             has_favorited = splt[2].split('=')[1]
 
             cid = call.message.chat.id
-            try:
-                bot.send_chat_action(call.message.chat.id, 'upload_photo')  # Sends "uploading photo" chat action
 
-                load = Img.post(param)  # Loads the json object with the query
+            if param not in ['anime', 'animal_ears']:
+                if str(cid) not in nsfw_ids:
+                    msg = "You are trying to use a Not Safe For Work button, but your configuration has\n" \
+                          "disabled mature content! To use this button, you should first enable\n" \
+                          "mature content view in /preferences."
+                    bot.send_message(cid, msg)
+                else:
+                    inline_media_handler(call, cid, param, call_id, has_favorited)
 
-                # file = load['file_url']  # The picture url
-
-                id = load['id']  # The picture unique identifier, on the server
-
-                dirc = load['directory']
-
-                img = load['image']
-
-                download_url = 'http://gelbooru.com/images/{dirc}/{img}'.format(dirc=dirc, img=img)
-
-                keyboard = telebot.types.InlineKeyboardMarkup(row_width=3)
-                button = telebot.types.InlineKeyboardButton(text="💾", url=download_url)  # Download button
-                button2 = telebot.types.InlineKeyboardButton(text="➕",
-                                                             callback_data=
-                                                             param + " id={0}".format(id) + ' fav=No')  # load more
-                button3 = telebot.types.InlineKeyboardButton(text="🔘",
-                                                             switch_inline_query="id:{0}".format(id))  # Share
-                button4 = telebot.types.InlineKeyboardButton(text="⭐️",
-                                                             callback_data=
-                                                             'favorite_add={id}&media={md}'.format(id=id, md=param))
-                button5 = telebot.types.InlineKeyboardButton(text="ℹ️", callback_data="info={id}".format(id=id))
-
-                try:
-                    keyboard.row(button, button3, button5, button4)
-                    keyboard.add(button2)
-
-                    if img.endswith('.gif'):
-                        bot.send_document(cid, download_url, caption='🎴ID: {id}\n'.format(id=id), reply_markup=keyboard)
-
-                    else:
-                        bot.send_photo(cid, download_url, caption='🎴ID: {id}\n'.format(id=id), reply_markup=keyboard)
-
-                    Data.update_media_processed()
-
-                except Exception as e:
-                    retry_keyboard = telebot.types.InlineKeyboardMarkup()
-                    retry_button = telebot.types.InlineKeyboardButton(text="🔄 Retry", callback_data=call.data)
-                    retry_keyboard.add(retry_button)
-
-                    bot.send_message(cid,
-                                     "Sorry!\n`An unexpected error occurred when processing your request`.\nTry again?",
-                                     parse_mode='markdown', reply_markup=retry_keyboard)
-                    print("An Error occurred in 'more {0}':".format(call.data), e)
-                    pass
-
-                try:
-                    load = Img.search_query("id:{0}".format(call_id))  # Loads the json object with the query
-
-                    dirc = load[0]['directory']
-
-                    img = load[0]['image']
-
-                    download_url = 'http://gelbooru.com/images/{dirc}/{img}'.format(dirc=dirc, img=img)
-
-                    keyboard = telebot.types.InlineKeyboardMarkup(row_width=3)
-                    button = telebot.types.InlineKeyboardButton(text="💾", url=download_url)  # Download button
-                    button3 = telebot.types.InlineKeyboardButton(text="🔘",
-                                                                 switch_inline_query='id:{0}'.format(call_id))  # Share
-                    button41 = telebot.types.InlineKeyboardButton(text="⭐️",
-                                                                  callback_data='favorite_add={id}'.format(id=call_id))
-                    button42 = telebot.types.InlineKeyboardButton(text="🌟",
-                                                                  callback_data='favorite_del={id}'.format(id=call_id))
-                    button5 = telebot.types.InlineKeyboardButton(text="ℹ️", callback_data="info={id}".format(id=call_id))
-
-                    if has_favorited == "Yes":
-                        keyboard.row(button, button3, button5, button42)
-
-                    else:
-                        keyboard.row(button, button3, button5, button41)
-
-                    bot.edit_message_reply_markup(cid, call.message.message_id, reply_markup=keyboard)
-
-                except Exception as e:
-                    msg = "Woops, I couldn't update your buttons, but don't worry! Your favorite was saved."
-                    bot.answer_callback_query(call.id, text=msg, show_alert=True)
-                    print("An Error occurred when tried to update the fav_btn:", e)
-                    pass
-
-            except Exception as e:
-                retry_keyboard = telebot.types.InlineKeyboardMarkup()
-                retry_button = telebot.types.InlineKeyboardButton(text="🔄 Retry", callback_data=call.data)
-                retry_keyboard.add(retry_button)
-
-                bot.send_message(cid,
-                                 "Sorry!\n`An unexpected error occurred when processing your request`.\nTry again?",
-                                 parse_mode='markdown', reply_markup=retry_keyboard)
-                print("An Error occurred when loading '{0}' dict:".format(call.data), e)
-                pass
+            else:
+                inline_media_handler(call, cid, param, call_id, has_favorited)
 
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith("info"))
@@ -731,204 +939,48 @@ def favs_handler(call):
         match = Data.search_favorites(str(cid))['favorites']
 
         if func == 'favorite_add':
-            try:
-                if id in match:
-                    bot.answer_callback_query(call.id, text="This file is already on favorites.")
-                else:
-                    Data.add_favorites(str(cid), id)
-                    bot.answer_callback_query(call.id, text="Added to favorites")
-
-                try:
-                    load = Img.search_query("id:{0}".format(id))  # Loads the json object with the query
-
-                    dirc = load[0]['directory']
-
-                    img = load[0]['image']
-
-                    download_url = 'http://gelbooru.com/images/{dirc}/{img}'.format(dirc=dirc, img=img)
-
-                    keyboard = telebot.types.InlineKeyboardMarkup(row_width=3)
-                    button = telebot.types.InlineKeyboardButton(text="💾", url=download_url)  # Download button
-                    button2 = telebot.types.InlineKeyboardButton(text="➕",
-                                                                 callback_data=
-                                                                 load_media + " id={0}".format(id) + ' fav=Yes')  # load more
-                    button3 = telebot.types.InlineKeyboardButton(text="🔘",
-                                                                 switch_inline_query='id:{0}'.format(id))  # Share
-                    button41 = telebot.types.InlineKeyboardButton(text="🌟",
-                                                                  callback_data='favorite_del={id}'.format(id=id))
-                    button42 = telebot.types.InlineKeyboardButton(text="🌟",
-                                                                  callback_data='favorite_del={id}&media={md}'.format(
-                                                                      id=id,
-                                                                      md=load_media))
-                    button5 = telebot.types.InlineKeyboardButton(text="ℹ️", callback_data="info={id}".format(id=id))
-
-                    if load_media.startswith("True"):
-
-                        redo_btn = telebot.types.InlineKeyboardButton(text="❌",
-                                                                      callback_data=
-                                                                      "favorite_del={id}&fav_command=True".format(
-                                                                          id=id))
-
-                        button2 = telebot.types.InlineKeyboardButton(text="🔘",
-                                                                     switch_inline_query="id:{0}".format(id))  # Share
-                        button3 = telebot.types.InlineKeyboardButton(text="ℹ️", callback_data="info={id}".format(id=id))
-
-                        if load_media.startswith("TrueNEXT"):
-                            obj = load_media.split(":")[1]
-                            button = telebot.types.InlineKeyboardButton(text=">>",
-                                                                        callback_data=
-                                                                        'load_fav {0} id:{1}'.format(obj,
-                                                                                                     id))  # load more
-                            button4 = telebot.types.InlineKeyboardButton(text="❌",
-                                                                         callback_data=
-                                                                         "favorite_del={id}&fav_command=TrueNEXT:{obj}".format(
-                                                                             id=id, obj=obj))
-                            keyboard.row(button2, button3)
-                            keyboard.add(button4)
-                            keyboard.add(button)
-
-                        else:
-                            keyboard.row(button2, button3)
-                            keyboard.add(redo_btn)
-                        bot.edit_message_caption(caption="File ID: {0} add back to your favorites".format(id),
-                                                 message_id=call.message.message_id, chat_id=cid,
-                                                 reply_markup=keyboard)
-
-                    else:
-                        if load_media == "":
-                            keyboard.row(button, button3, button5, button41)
-
-                        else:
-                            keyboard.row(button, button3, button5, button42)
-                            keyboard.add(button2)
-
-                        bot.edit_message_reply_markup(cid, call.message.message_id, reply_markup=keyboard)
-
-                except Exception as e:
-                    msg = "Woops, I couldn't update your buttons, but don't worry! Your favorite was saved."
-                    bot.answer_callback_query(call.id, text=msg, show_alert=True)
-                    print("An Error occurred when tried to update the fav_btn:", e)
-                    pass
-
-            except ValueError:
-                msg = "You already reached your limit of favorites! Go to /favorites to remove some, or" \
-                      "contact @MrHalk for a premium account!"
-
-                bot.answer_callback_query(call.id, text=msg, show_alert=True)
-
-            except Exception as e:
-                msg = "Woops, something went wrong! Please try to add this favorite again."
-                bot.answer_callback_query(call.id, text=msg, show_alert=True)
-                print("An Error occurred when tried to add a favorite for the user {0}:".format(cid), e)
-                pass
+            fav_add(call, cid, match, load_media, id)
 
         elif func == 'favorite_del':
-            try:
-                if id not in match:
-                    bot.answer_callback_query(call.id, text="This file was already removed from favorites.")
-                else:
-                    Data.del_favorites(str(cid), id)
-                    bot.answer_callback_query(call.id, text="Removed from favorites")
-
-                try:
-                    load = Img.search_query("id:{0}".format(id))  # Loads the json object with the query
-
-                    dirc = load[0]['directory']
-
-                    img = load[0]['image']
-
-                    download_url = 'http://gelbooru.com/images/{dirc}/{img}'.format(dirc=dirc, img=img)
-
-                    keyboard = telebot.types.InlineKeyboardMarkup(row_width=3)
-                    button = telebot.types.InlineKeyboardButton(text="💾", url=download_url)  # Download button
-                    button2 = telebot.types.InlineKeyboardButton(text="➕",
-                                                                 callback_data=
-                                                                 load_media + "id={0}".format(id) + 'fav=No')  # load more
-                    button3 = telebot.types.InlineKeyboardButton(text="🔘",
-                                                                 switch_inline_query='id:{0}'.format(id))  # Share
-                    button41 = telebot.types.InlineKeyboardButton(text="⭐️",
-                                                                  callback_data='favorite_add={id}'.format(id=id))
-                    button42 = telebot.types.InlineKeyboardButton(text="⭐️",
-                                                                  callback_data='favorite_add={id}&media={md}'.format(
-                                                                      id=id,
-                                                                      md=load_media))
-                    button5 = telebot.types.InlineKeyboardButton(text="ℹ️", callback_data="info={id}".format(id=id))
-
-                    if load_media.startswith("True"):
-
-                        undo_btn = telebot.types.InlineKeyboardButton(text="Undo",
-                                                                      callback_data=
-                                                                      "favorite_add={id}&fav_command=True".format(
-                                                                          id=id))
-                        if load_media.startswith("TrueNEXT"):
-                            obj = load_media.split(":")[1]
-                            next_button = telebot.types.InlineKeyboardButton(text=">>",
-                                                                             callback_data=
-                                                                             'load_fav {0} id:{1} is_deleted'.format(obj,id))  # load more
-                            keyboard.add(undo_btn)
-                            keyboard.add(next_button)
-
-                        else:
-                            keyboard.add(undo_btn)
-                        bot.edit_message_caption(caption="File ID: {0} removed from your favorites".format(id),
-                                                 message_id=call.message.message_id, chat_id=cid,
-                                                 reply_markup=keyboard)
-
-                    else:
-                        if load_media == "":
-                            keyboard.row(button, button3, button5, button41)
-
-                        else:
-                            keyboard.row(button, button3, button5, button42)
-                            keyboard.add(button2)
-
-                        bot.edit_message_reply_markup(cid, call.message.message_id, reply_markup=keyboard)
-
-                except Exception as e:
-                    msg = "Woops, I couldn't update your buttons, but don't worry! Your favorite was saved."
-                    bot.answer_callback_query(call.id, text=msg, show_alert=True)
-                    print("An Error occurred when tried to update the fav_btn:", e)
-                    pass
-
-            except Exception as e:
-                msg = "Woops, something went wrong! Please try to remove this favorite again."
-                bot.answer_callback_query(call.id, text=msg, show_alert=True)
-                print("An Error occurred when tried to remove a favorite for the user {0}:".format(cid), e)
-                pass
+            fav_del(call, cid, match, load_media, id)
 
 
 @bot.message_handler(commands=['favs', 'fav', 'favorites'])
 def send_favorites(m):
     cid = m.chat.id
-    bot.send_chat_action(cid, 'typing')
-    try:
-        user = Data.search_favorites(str(cid))
-        user_favorites = user['favorites']
-        limit = user['limit']
-        count_favs = len(user_favorites)
+    if str(cid) not in registered_users:
+        bot.reply_to(m, "Ooops, looks like you're not registered. Please tap /start to register.")
 
-        if limit == "None":
-            limit_message = u'You are _Premium Member_, no limits applicable to your favorites'
-
-        else:
-            limit_message = u'You still can add _{limit}_ files to your favorites'.format(limit=limit)
-
-        msg = u'*Favorites*\n\n' \
-              u'You have _{count_favs}_  favorites.\n' \
-              u'{limit_message}\n\n' \
-              u'Tap the button below to view and manage your favorites.'.format(count_favs=count_favs,
-                                                                                limit_message=limit_message)
-
-        keyboard = telebot.types.InlineKeyboardMarkup()
-        button1 = telebot.types.InlineKeyboardButton("View your favorites ({0})".format(count_favs),
-                                                     callback_data="load_fav 0 is_init")
-        keyboard.add(button1)
-
-        bot.reply_to(m, msg, reply_markup=keyboard, parse_mode='markdown')
-
-    except Exception as e:
-        bot.reply_to(m, "Woops! Something weird happened. Please try again or contact @MrHalk for a bug report.")
-        print("An exception occurred when tried to send 'user_fav_msg':", e)
+    else:
+        bot.send_chat_action(cid, 'typing')
+        try:
+            user = Data.search_favorites(str(cid))
+            user_favorites = user['favorites']
+            limit = user['limit']
+            count_favs = len(user_favorites)
+    
+            if limit == "None":
+                limit_message = u'You are _Premium Member_, no limits applicable to your favorites'
+    
+            else:
+                limit_message = u'You still can add _{limit}_ files to your favorites'.format(limit=limit)
+    
+            msg = u'*Favorites*\n\n' \
+                  u'You have _{count_favs}_  favorites.\n' \
+                  u'{limit_message}\n\n' \
+                  u'Tap the button below to view and manage your favorites.'.format(count_favs=count_favs,
+                                                                                    limit_message=limit_message)
+    
+            keyboard = telebot.types.InlineKeyboardMarkup()
+            button1 = telebot.types.InlineKeyboardButton("View your favorites ({0})".format(count_favs),
+                                                         callback_data="load_fav {0} is_init".format(count_favs - 1))
+            keyboard.add(button1)
+    
+            bot.reply_to(m, msg, reply_markup=keyboard, parse_mode='markdown')
+    
+        except Exception as e:
+            bot.reply_to(m, "Woops! Something weird happened. Please try again or contact @MrHalk for a bug report.")
+            print("An exception occurred when tried to send 'user_fav_msg':", e)
 
 
 @bot.callback_query_handler(func=lambda call: call.data.startswith("load_fav"))
@@ -948,7 +1000,7 @@ def load_favs(call):
                 user_favs = user['favorites']
                 favs_count = len(user_favs)
 
-                if load_obj >= favs_count:
+                if load_obj == -1:
                     bot.answer_callback_query(call.id, text="All favorites already loaded")
 
                 else:
@@ -958,32 +1010,32 @@ def load_favs(call):
 
                     load = Img.search_query("id:{0}".format(search_fav))  # Loads the json object with the query
 
-                    # file = load['file_url']  # The picture url
+                    file = 'http:' + load[0]['file_url']  # The picture url
 
                     id = load[0]['id']  # The picture unique identifier, on the server
 
-                    dirc = load[0]['directory']
-
-                    img = load[0]['image']
-
-                    download_url = 'http://gelbooru.com/images/{dirc}/{img}'.format(dirc=dirc, img=img)
 
                     keyboard = telebot.types.InlineKeyboardMarkup(row_width=3)
                     button = telebot.types.InlineKeyboardButton(text=">>",
                                                                 callback_data=
-                                                                'load_fav {0} id:{1}'.format(int(load_obj + 1),
+                                                                'load_fav {0} id:{1}'.format(int(load_obj - 1),
                                                                                              search_fav))  # load more
                     button2 = telebot.types.InlineKeyboardButton(text="🔘",
                                                                  switch_inline_query="id:{0}".format(id))  # Share
                     button3 = telebot.types.InlineKeyboardButton(text="ℹ️", callback_data="info={id}".format(id=id))
                     button4 = telebot.types.InlineKeyboardButton(text="❌",
                                                                  callback_data=
-                                                                 "favorite_del={id}&fav_command=TrueNEXT:{obj}".format(id=id, obj=load_obj))
+                                                                 "favorite_del={id}&fav_command=TrueNEXT:{obj}".format(id=id, obj=load_obj - 1))
+
+                    reload_button = telebot.types.InlineKeyboardButton(text="To the First",
+                                                                       callback_data=
+                                                                       "load_fav {0} id:{1}".format(favs_count - 1, id))
 
                     try:
-                        if favs_count == int(load_obj + 1):
+                        if int(load_obj - 1) == -1:
                             keyboard.row(button2, button3)
                             keyboard.add(button4)
+                            keyboard.add(reload_button)
 
                             bot.answer_callback_query(call.id, text="This is the last favorite. All favorites loaded.")
 
@@ -992,12 +1044,12 @@ def load_favs(call):
                             keyboard.add(button4)
                             keyboard.add(button)
 
-                        if img.endswith('.gif'):
-                            bot.send_document(cid, download_url, caption='🎴ID: {id}\n'.format(id=id),
+                        if file.endswith('.gif'):
+                            bot.send_document(cid, file, caption='🎴ID: {id}\n'.format(id=id),
                                               reply_markup=keyboard)
 
                         else:
-                            bot.send_photo(cid, download_url, caption='🎴ID: {id}\n'.format(id=id),
+                            bot.send_photo(cid, file, caption='🎴ID: {id}\n'.format(id=id),
                                            reply_markup=keyboard)
 
                     except Exception as e:
@@ -1091,11 +1143,10 @@ def query_text(inline_query):
         if text.startswith("id:"):  # If the query starts with 'id:', which means it came from a "Share" instance
             result = []
 
-            # file = load[0]['file_url']  # File url
             id = load[0]['id']  # File unique identifier in the server
             dirc = load[0]['directory']  # Directory where it is stored in the server
             hash = load[0]['hash']  # The hash string provided by the server
-            img = load[0]['image']
+            file = 'http:' + load[0]['file_url']  # The picture url
             thumb = "http://gelbooru.com/thumbnails/{0}/thumbnail_{1}.jpg".format(dirc, hash)  # A complicated thumbnail
                                                                                                # builder
             tags = load[0]["tags"].split()  # Splits the tags in a list
@@ -1111,26 +1162,26 @@ def query_text(inline_query):
             else:                                       # Files for the user
                 tag_rating = "rating:explicit"
 
-            download_url = 'http://gelbooru.com/images/{dirc}/{img}'.format(dirc=dirc, img=img)
-
             kb = types.InlineKeyboardMarkup()
-            # kb1 = types.InlineKeyboardButton(text="💾", url=file)
-            kb2 = types.InlineKeyboardButton(text="🔍 Search Similar",
+            kb1 = types.InlineKeyboardButton(text="⭐️ View in {bot_name}".format(bot_name=Config.BOT_NAME),
+                                             url="t.me/{bot_id}?start=id:{id}".format(bot_id=Config.BOT_ID,
+                                                                                        id=id))  # View in Private
+            kb2 = types.InlineKeyboardButton(text="🔍 View Similar",
                                              switch_inline_query_current_chat="{0} {1} {2} {3}".format(tag_rating,
                                                                                                        tags1,
                                                                                                        tags2,
                                                                                                        tags3))
-            kb.add(kb2)
+            kb.add(kb1, kb2)
 
             pic_caption = 'Shared Picture\n🎴ID: {id}\n'.format(id=id)
             gif_caption = 'Shared GIF\n🎴ID: {id}\n'.format(id=id)
-            if img.endswith('.gif'):  # if the file is a gif
-                gif = types.InlineQueryResultGif('1', download_url, download_url, caption=gif_caption,
+            if file.endswith('.gif'):  # if the file is a gif
+                gif = types.InlineQueryResultGif('1', file, file, caption=gif_caption,
                                                  reply_markup=kb)
                 result.append(gif)  # inserts the object in the cache database
 
             else:  # if the file is any type of image
-                pic = types.InlineQueryResultPhoto('1', download_url, thumb, caption=pic_caption,
+                pic = types.InlineQueryResultPhoto('1', file, thumb, caption=pic_caption,
                                                    reply_markup=kb)
                 result.append(pic)  # inserts the object in the cache database
 
@@ -1144,31 +1195,27 @@ def query_text(inline_query):
             af = 0
 
             for i in load:  # this 'for' loop inserts on the 'cache_list' up to 50 objects for the query result
-                # file = i['file_url']  # file url
                 id = i['id']  # File unique identifier in the server
                 dirc = i['directory']  # Directory where it is stored in the server
                 hash = i['hash']  # The hash string provided by the server
                 thumb = "http://gelbooru.com/thumbnails/{0}/thumbnail_{1}.jpg".format(dirc, hash)  # again, the odd
                                                                                                    # thumbnail stuff
-
-                dirc = i['directory']
-
-                img = i['image']
-
-                download_url = 'http://gelbooru.com/images/{dirc}/{img}'.format(dirc=dirc, img=img)
+                file = 'http:' + load[0]['file_url']  # The picture url
 
                 kb = telebot.types.InlineKeyboardMarkup(row_width=2)
-                kb1 = telebot.types.InlineKeyboardButton(text="💾 Original", url=download_url)  # Download button
-                kb2 = types.InlineKeyboardButton(text="🔍 Search more",
+                kb1 = types.InlineKeyboardButton(text="⭐️ View in {bot_name}".format(bot_name=Config.BOT_NAME),
+                                                 url="t.me/{bot_id}?start=id:{id}".format(bot_id=Config.BOT_ID,
+                                                                                            id=id))  # View in Private
+                kb2 = types.InlineKeyboardButton(text="🔍 Search More",
                                                  switch_inline_query_current_chat=text)
                 kb.row(kb1, kb2)
-                if img.endswith('.gif'):  # if the file is gif
-                    gif = types.InlineQueryResultGif(str(int(af)), download_url, thumb_url=download_url,
+                if file.endswith('.gif'):  # if the file is gif
+                    gif = types.InlineQueryResultGif(str(int(af)), file, thumb_url=file,
                                                      caption='🎴ID: {id}\n'.format(id=id),
                                                      reply_markup=kb)
                     cache_list.append(gif)  # inserts the object in the cache
                 else:  # if the file is any type of image
-                    pic = types.InlineQueryResultPhoto(str(int(af)), download_url, thumb_url=thumb,
+                    pic = types.InlineQueryResultPhoto(str(int(af)), file, thumb_url=thumb,
                                                        caption='🎴ID: {id}\n'.format(id=id),
                                                        reply_markup=kb)
                     cache_list.append(pic)  # inserts the object in the cache
@@ -1284,13 +1331,30 @@ def callback_inline(call):
                     pass
 
         elif call.data == 'stats':
-            message = "Registered users: {0}".format(1)
+            stats = Data.get_stats()
+            regis_users = stats[0]['registered_users']
+            blok_users = stats[0]['blocked_users']
+            sub_users = stats[0]['subscribed_users']
+            mtd_users = stats[0]['muted_users']
+            md_process = stats[0]['media_processed']
+            inline_process = stats[0]['inline_processed']
+
+            msg = u'👥 *Users Statistics*\n\n' \
+                  u'*Registered Users:*  `{0}`\n' \
+                  u'*Subscribed Users:*  `{1}`\n' \
+                  u'*Muted Users:*  `{2}`\n' \
+                  u'*Blocked Users:*  `{3}`\n\n\n' \
+                  u'📊 *Bot Statistics*\n\n' \
+                  u'*Media Processed:*  `{4}`\n' \
+                  u'*Inline Queries:*  `{5}`'.format(regis_users, sub_users, mtd_users,
+                                                     blok_users, md_process, inline_process)
 
             ka = telebot.types.InlineKeyboardMarkup(row_width=2)
             kbtn = telebot.types.InlineKeyboardButton("🔄", callback_data='stats')
             kbtn2 = telebot.types.InlineKeyboardButton("🔙", callback_data='back_main_admin')
             ka.row(kbtn, kbtn2)
-            bot.edit_message_text(message, call.message.chat.id, call.message.message_id, reply_markup=ka)
+            bot.edit_message_text(msg, call.message.chat.id, call.message.message_id, reply_markup=ka,
+                                  parse_mode='markdown')
 
         elif call.data == 'back_main_admin':
             kb = telebot.types.InlineKeyboardMarkup()
@@ -1298,6 +1362,24 @@ def callback_inline(call):
             kb.add(kbbtn1)
             bot.edit_message_text("Select one of the options below:", call.message.chat.id,
                                   call.message.message_id, reply_markup=kb)
+
+        elif call.data.startswith("accept_member"):
+            splt = call.data.split()
+            id = splt[1]
+
+            Data.toggle_stat_user_is_premium(str(id))
+
+            bot.edit_message_text("User is now premium!", call.message.chat.id, call.message.message_id)
+
+            bot.send_message(str(id), "The moderator accepted your premium request! Now you have unlimited power!")
+
+        elif call.data.startswith("decline_member"):
+            splt = call.data.split()
+            id = splt[1]
+
+            bot.edit_message_text("User premium declined.", call.message.chat.id, call.message.message_id)
+
+            bot.send_message(str(id), "The moderator declined your premium request.")
 
 
 row = ['⌨ Hide Keyboard', '⌨ Esconder Teclado', '⌨ Ocultar teclado', '⌨ Tastatur ausblenden',
