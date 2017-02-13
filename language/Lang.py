@@ -10,7 +10,7 @@ Lang = {
                 u'Please, send `/help` if you need, or `/commands` to see all my functions!\n'
                 u'I can work inline, so you can call me anytime you want, by typing `@EmaRobot` and writing your tags\n'
                 u'Take a look at the examples of inline usage in `/inline_help` \n\n'
-                u'BETA build no. 1.0.0-BETA',
+                u'`Build no. 1.0.1`',
             'start_reg':
                 u'Hello again *{name}*! How are you? if you need any help, see /help \n(｡･ω･｡)',
             'help':
@@ -27,6 +27,7 @@ Lang = {
                 u'/animal_ears - Sends you a random _Kemonomimi_ Picture\n'
                 u'/id - Search picture by my [Source\'s ID](t.me/{bot_id}?start=source_id)\n'
                 u'`/tag` - Search by [Tag](t.me/{bot_id}?start=tags)🚫\n\n'
+                u'/favorites - Sends you your favorites\n\n'
                 u'You can also search me using inline! see /inline\_help for further info, sir!\n\n\n'
                 u'_Commands with 🚫 aren\'t working yet._',
             'inline_help':
@@ -58,7 +59,8 @@ Lang = {
                 u'  -`/tag` _let\'s you searching for a tag!_ [|?|](t.me/{bot_id}?start=tags)\n\n'
                 u'You can also make an inline search in me! [|?|](t.me/{bot_id}?start=inline_help)\n'
                 u'Just do the following:\n'
-                u'`@{bot_id} rating:safe tighhighs` - This will return few images that matches the tags `nase_yaeka` and `bra`.\n\n',
+                u'`@{bot_id} rating:safe tighhighs` - This will return few images that matches the tags `nase_yaeka` and `bra`.\n\n'
+                u'/favorites - Sends you your favorites\n\n',
             },
         'keyboard': {
             'buttons': {
@@ -98,7 +100,7 @@ Lang = {
                 u'Please, send `/help` if you need, or `/commands` to see all my functions!\n'
                 u'I can work inline, so you can call me anytime you want, by typing `@EmaRobot` and writing your tags\n'
                 u'Take a look at the examples of inline usage in `/inline_help` \n\n'
-                u'BETA build no. 0.9.1',
+                u'`Build no. 1.0.1`',
             'start_reg':
                 u'Olá novamente *{name}*! Como está? Se precisar de ajuda, veja /help \n(｡･ω･｡)',
             'help':
@@ -115,6 +117,7 @@ Lang = {
                 u'/animal_ears - Envia imagens de _Kemonomimi_ aleatórias\n'
                 u'/id - Procurar imagens pelo meu [ID de fonte](t.me/{bot_id}?start=source_id)\n'
                 u'`/tag` - Procurar por [Tag](t.me/{bot_id}?start=tags)🚫\n\n'
+                u'/favorites - Sends you your favorites\n\n'
                 u'Você também pode me usar inline! Veja /inline\_help para mais informações, senhor!\n\n\n'
                 u'_Comandos com 🚫 ainda não estão funcionando._',
             'inline_help':
@@ -146,7 +149,8 @@ Lang = {
                 u'  -`/tag` _permite que você procure por uma tag!_ [|?|](t.me/{bot_id}?start=tags)\n\n'
                 u'Você também pode fazer busca inline em mim! [|?|](t.me/{bot_id}?start=inline_help)\n'
                 u'É bem simples, faça algo assim:\n'
-                u'`@{bot_id} rating:safe tighhighs` - Isso retornará algumas imagens que correspondem às tags `nase_yaeka` e `bra`.\n\n',
+                u'`@{bot_id} rating:safe tighhighs` - Isso retornará algumas imagens que correspondem às tags `nase_yaeka` e `bra`.\n\n'
+                u'/favorites - Sends you your favorites\n\n',
             },
         'keyboard': {
             'buttons': {
@@ -186,7 +190,7 @@ Lang = {
                     u'Por favor, envía `/help` si necesitas ayuda, o `/commands` para ver todas mis funciones!\n'
                     u'Puedo funcionar en modo inline, así que puedes llamarme cuando quieras, escribiendo `@EmaRobot` y las etiquetas (o tags)\n'
                     u'Dale un vistazo a los ejemplos de uso de la función inline en `/inline_help` \n\n'
-                    u'BETA build no. 0.9.1',
+                    u'`Build no. 1.0.1`',
                 'start_reg':
                     u'Hola de nuevo *{name}*! Cómo estás? Si necesitas ayuda, usa /help \n(｡･ω･｡)',
                 'help':
@@ -203,6 +207,7 @@ Lang = {
                     u'/animal_ears - Te envía una imagen de _Kemonomimi_ al azar\n'
                     u'/id - Buscar una imagen mediante las [ID de mis fuentes](t.me/{bot_id}?start=source_id)\n'
                     u'`/tag` - Buscar por [Tag](t.me/{bot_id}?start=tags)🚫\n\n'
+                    u'/favorites - Sends you your favorites\n\n'
                     u'También puedes buscar usando el modo inline! Ve /inline\_help para más información, señor!\n\n\n'
                     u'_Los comandos que contengas 🚫 no están funcionando aún._',
                 'inline_help':
@@ -234,7 +239,8 @@ Lang = {
                     u'  -`/tag` _ te permite buscar imagenes mediante Tags!_ [|?|](t.me/{bot_id}?start=tags)\n\n'
                     u'También puedes realizar busquedas inline conmigo! [|?|](t.me/{bot_id}?start=inline_help)\n'
                     u'Solo haz lo siguiente:\n'
-                    u'`@{bot_id} rating:safe tighhighs` - Esto proporcionará algunas imágenes que coincidan con las Tags `nase_yaeka` y `bra`.\n\n',
+                    u'`@{bot_id} rating:safe tighhighs` - Esto proporcionará algunas imágenes que coincidan con las Tags `nase_yaeka` y `bra`.\n\n'
+                    u'/favorites - Sends you your favorites\n\n',
                 },
         'keyboard': {
                 'buttons': {
@@ -274,7 +280,7 @@ Lang = {
                     u'Bitte sende `/help` falls benötigt, oder `/commands` um all meine Funktionen zu sehen!\n'
                     u'Ich funktioniere auch über Inline-Kommandos, wodurch du mich jederzeit durch `@EmaRobot` gefolgt von einem Tag nutzen kannst.\n'
                     u'Schau dir mal die Hilfe dazu an indem du folgendes eingibst: `/inline_help` \n\n'
-                    u'BETA build no. 0.9.1',
+                    u'`Build no. 1.0.1`',
                 'start_reg':
                     u'Hallo nochmal *{name}*! Wie geht es dir? Falls du Hilfe brauchst, gebe doch bitte /help ein. \n(｡･ω･｡)',
                 'help':
@@ -291,6 +297,7 @@ Lang = {
                     u'/animal_ears - Sendet dir ein zufälliges _Kemonomimi_ Bild\n'
                     u'/id - Sucht Bild mittels [Quell\'s ID](t.me/{bot_id}?start=source_id)\n'
                     u'`/tag` - Sucht nach einem [Tag](t.me/{bot_id}?start=tags)🚫\n\n'
+                    u'/favorites - Sends you your favorites\n\n'
                     u'Du kannst mich auch durch die Inline-Kommandos nutzen! Schau bei /inline\_help für mehr Informationen!\n\n\n'
                     u'_Kommandos mit 🚫 funktionieren derzeit nicht._',
                 'inline_help':
@@ -322,7 +329,8 @@ Lang = {
                     u'  -`/tag` _lässt dich nach einem bestimmten Suchbegriff suchen_ [|?|](t.me/{bot_id}?start=tags)\n\n'
                     u'Du kannst mich außerdem auch über die Inline Funktion nutzen! [|?|](t.me/{bot_id}?start=inline_help)\n'
                     u'Versuche es einmal so:\n'
-                    u'`@{bot_id} rating:safe tighhighs` - Dies wird dir ein paar Bilder mit den Suchbegriffen `nase_yaeka` und `bra` liefern.\n\n',
+                    u'`@{bot_id} rating:safe tighhighs` - Dies wird dir ein paar Bilder mit den Suchbegriffen `nase_yaeka` und `bra` liefern.\n\n'
+                    u'/favorites - Sends you your favorites\n\n',
                 },
         'keyboard': {
                 'buttons': {
@@ -362,7 +370,7 @@ Lang = {
                 u'Пожалуйста, напиши `/help` если тебе нужна помощь, или `/commands` чтобы получить информацию о моем функционале!\n'
                 u'Я могу работать в inline-режиме. Это значит что ты можешь призвать меня в любом чате, набрав  `@EmaRobot` и написав желаемый тег.\n'
                 u'Взгляни на примеры использования в режиме inline с помощью `/inline_help` \n\n'
-                u'BETA build no. 0.9.1',
+                u'`Build no. 1.0.1`',
             'start_reg':
                 u'И снова здравствуй, *{name}*! Как поживаешь? Если тебе нужна помощь набери /help \n(｡･ω･｡)',
             'help':
@@ -379,6 +387,7 @@ Lang = {
                 u'/animal_ears - Отправит тебе произвольное _Kemonomimi_ изображениеe\n'
                 u'/id - Будет искать изображение исходя из [ID источника](t.me/{bot_id}?start=source_id)\n'
                 u'`/tag` - Искать по [тэгу](t.me/{bot_id}?start=tags)🚫\n\n'
+                u'/favorites - Sends you your favorites\n\n'
                 u'Ты так же можешь выполнить поиск используя меня в режиме inline! Глянь /inline\_help чтобы узнать больше, сэнпай!\n\n\n'
                 u'_Команды с 🚫 пока не работают. Увы. Но мы усердно работаем над этим!_',
             'inline_help':
@@ -410,7 +419,8 @@ Lang = {
                 u'  -`/tag` _позволит вам искать по тэгу!_ [|?|](t.me/{bot_id}?start=tags)\n\n'
                 u'Ты также можешь использовать inline поиск в этом чате! [|?|](t.me/{bot_id}?start=inline_help)\n'
                 u'Просто следуй инструкциям:\n'
-                u'`@{bot_id} rating:safe tighhighs` - Это покажет доступные изображения по тегам `nase_yaeka` и `bra`.\n\n',
+                u'`@{bot_id} rating:safe tighhighs` - Это покажет доступные изображения по тегам `nase_yaeka` и `bra`.\n\n'
+                u'/favorites - Sends you your favorites\n\n',
         },
         'keyboard': {
             'buttons': {
@@ -451,7 +461,7 @@ Lang = {
                     u', invia `/help` se hai bisogno d''aiuto, o `/commands` per vedere tutte le mie funzionalità!\n'
                     u'Funziono anche in modalità inline, puoi richiamarmi in qualsiasi momento scrivendo `@EmaRobot` seguito dai vari tag\n'
                     u'Puoi dare un occhio al funzionamento dell\' inline inviandomi `/inline_help` \n\n'
-                    u'BETA build no. 0.9.1',
+                    u'`Build no. 1.0.1`',
                 'start_reg':
                     u'Salve ancora *{name}*! Come stai? Se hai bisogno di aiuto, vedi /help \n(｡･ω･｡)',
                 'help':
@@ -468,6 +478,7 @@ Lang = {
                     u'/animal_ears - Invia un immagine _Kemonomimi_ a caso\n'
                     u'/id - Cerca un immagine tramite il mio [Source\'s ID](t.me/{bot_id}?start=source_id)\n'
                     u'`/tag` - Cerca per [Tag](telegram.me/{bot_id}?start=tags)🚫\n\n'
+                    u'/favorites - Sends you your favorites\n\n'
                     u'Puoi anche cercare tramite l\'inline! Vedi /inline\_help per altre informazioni, sir!\n\n\n'
                     u'_I comandi con 🚫 non sono ancora funzionanti._',
                 'inline_help':
@@ -499,7 +510,8 @@ Lang = {
                     u'  -`/tag` _ti permette di cercare per tag!_ [|?|](t.me/{bot_id}?start=tags)\n\n'
                     u'Puoi anche fare ricerche inline con me! [|?|](t.me/{bot_id}?start=inline_search)\n'
                     u'Prova a fare questo:\n'
-                    u'`@{bot_id} rating:safe tighhighs` - Ritornerà alcune immagini che corrispondono ai tag `nase_yaeka` and `bra`.\n\n',
+                    u'`@{bot_id} rating:safe tighhighs` - Ritornerà alcune immagini che corrispondono ai tag `nase_yaeka` and `bra`.\n\n'
+                    u'/favorites - Sends you your favorites\n\n',
                 },
                 'keyboard': {
                 'buttons': {
