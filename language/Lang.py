@@ -272,7 +272,7 @@ Lang = {
                     }
         }
     },
-    'Deutsche': {
+    'Deutsch': {
         'CommandText': {
                 'start':
                     u'Hallo *{name}*!\n\n'
@@ -295,7 +295,7 @@ Lang = {
                     u'/yuri - Sendet dir ein zufälliges _yuri_ Bild\n'
                     u'/yaoi - Sendet dir ein zufälliges_yaoi_ Bild\n'
                     u'/animal_ears - Sendet dir ein zufälliges _Kemonomimi_ Bild\n'
-                    u'/id - Sucht Bild mittels [Quell\'s ID](t.me/{bot_id}?start=source_id)\n'
+                    u'/id - Sucht Bild mithilfe der [Quell ID](t.me/{bot_id}?start=source_id)\n'
                     u'`/tag` - Sucht nach einem [Tag](t.me/{bot_id}?start=tags)🚫\n\n'
                     u'/favorites - Sends you your favorites\n\n'
                     u'Du kannst mich auch durch die Inline-Kommandos nutzen! Schau bei /inline\_help für mehr Informationen!\n\n\n'
@@ -303,14 +303,14 @@ Lang = {
                 'inline_help':
                     u'Hier einige Tipps um meine `inline` Funktion zu nutzen:\n\n'
                     u'1. *Inline Benutzung*\n'
-                    u'  Um mich mittels Inline Funktion anzusprechen, tippe bitte `@{bot_id}` ein\n'
+                    u'  Um mich mittels Inline Funktion anzusprechen, gib bitte `@{bot_id}` ein\n'
                     u'  Eine Nachricht sollte erscheinen in der du eingeben kannst was ich erledigen soll.\n\n'
                     u'2. *Suche nach Suchbegriffen* [|?|](t.me/{bot_id}?start=tags)\n'
                     u'  Du kannst nach bestimmten Suchbegriffen innerhalb meiner Quellen suchen.\n\n'
                     u'3. *Passende Ergebnisse*\n'
                     u'  Nachdem du den jeweiligen Suchbegriff gesendet hast, \n'
                     u'  erscheinen die gewünschten Ergebnisse gelistet.\n\n'
-                    u'Fertig! Jetzt bist du ein Profi bei der Benutzung von `Inline Funktionen`! (≧▽≦)',
+                    u'Fertig! Jetzt bist du ein Profi bei der Benutzung meiner `Inline Funktionen`! (≧▽≦)',
                 'tags':
                     u'Benutzung:\n'
                     u'`@{bot_id} [Suchbegriff]`\n'
@@ -320,7 +320,7 @@ Lang = {
                     u'welches der Quell-ID entspricht.\n\n'
                     u'_(Merke: Versuche keine astronomisch große Zahlen. Meine Quellen sind zwar groß, jedoch nicht unendlich!)_',
                 'help_use':
-                    u'Na schön {name}. Meine Benutzung ist recht einfach! Ich versuche dir die Einstellungen vorzunehmen.\n'
+                    u'Na schön {name}. Meine Benutzung ist recht einfach! Ich werde dir helfen, dich zurecht zu finden.\n'
                     u'Zuerst hast du bestimmt meine Kommandoliste gesehen die beim Klick\n'
                     u'auf das |/|, auftaucht. Bei einem Klick werden dir alle Kommandos angezeigt.\n'
                     u'Außerdem kannst du [hier klicken um meine Kommandos zu sehen](https://t.me/{bot_id}?start=commands)\n'
@@ -330,7 +330,7 @@ Lang = {
                     u'Du kannst mich außerdem auch über die Inline Funktion nutzen! [|?|](t.me/{bot_id}?start=inline_help)\n'
                     u'Versuche es einmal so:\n'
                     u'`@{bot_id} rating:safe tighhighs` - Dies wird dir ein paar Bilder mit den Suchbegriffen `nase_yaeka` und `bra` liefern.\n\n'
-                    u'/favorites - Sends you your favorites\n\n',
+                    u'/favorites - Schickt dir deine Favoriten\n\n',
                 },
         'keyboard': {
                 'buttons': {
@@ -354,7 +354,7 @@ Lang = {
                 'messages': {
                         'Lang_pref': u'Bitte, wähle deine bevorzugte Sprache:\n\n'
                                      u'_Mehr Sprachen gibt es bald!_',
-                        'Chosen_lang': 'Ok! deine Sprache wurde gesetzt auf: `Deutsche`.',
+                        'Chosen_lang': 'Ok! Deine Sprache wurde gesetzt auf: `Deutsch`.',
                         'set_opt': 'Wähle eine Option:',
                         'notif_pref': u'Wähle ob du Benachrichtugungen empfangen willst:\n'
                                       u'⭕️_Keine Benachrichtigungen empfangen_\n'
