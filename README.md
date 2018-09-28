@@ -25,6 +25,9 @@ Now you're all set! run ```Bot.py``` and watch your Ema-based bot working!
 
 
 # Changelog
+**V1:**
+  Version 1, stable. This bot will be soon upgraded to a new code base, 2.x.
+
 **Beta-7:**
   Version 0.9.x! (Beta 7)
   0.9x is here!
