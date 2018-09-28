@@ -71,22 +71,30 @@ PARAMS = {
         '&password_hash={password_hash}',
     'anime': {
         'pid': list(range(329934)),
-        'params': '&tags=rating%3Asafe+-animated&ms=1&limit=1'},
+        'params': '&tags=rating%3Asafe&ms=1&limit=1'},
     'ecchi': {
         'pid': list(range(272744)),
-        'params': '&tags=rating%3Aquestionable+-animated&ms=1&limit=1'},
+        'params': '&tags=rating%3Aquestionable&ms=1&limit=1'},
     'loli': {
         'pid': list(range(117779)),
-        'params': '&tags=loli+-animated&limit=1'},
+        'params': '&tags=loli&limit=1'},
     'yuri': {
         'pid': list(range(86580)),
-        'params': '&tags=yuri+-animated&limit=1'},
+        'params': '&tags=yuri&limit=1'},
     'yaoi': {
         'pid': list(range(40294)),
-        'params': '&tags=yaoi+-animated&limit=1'},
+        'params': '&tags=yaoi&limit=1'},
     'hentai': {
-        'pid': list(range(392710)),
-        'params': '&tags=rating%3Aexplicit+-animated&limit=1'},
+        'pid': list(range(389413)),
+        'params': '&tags=rating%3Aexplicit+-webm&limit=1'},
+    'sweater_dress': {
+        'pid': list(range(682)),
+        'params': '&tags=virgin_killer_sweater&limit=1'
+    },
+    'animal_ears': {
+        'pid': list(range(254091)),
+        'params': '&tags=animal_ears&limit=1'
+    },
     'search':
         '&limit=50&tags=-webm+'
     }
@@ -134,20 +142,25 @@ class Requests:
 
 def post(arg=""):
     a = Requests('gelbooru', 'posts_list')
-    rpid = random.choice(PARAMS[arg]['pid'])
-    pid = rpid
+    pid = random.choice(PARAMS[arg]['pid'])
     b = a.post_list(arg, pid)
     return b[0] if b is not None else None  # Returns a JSON object containing the matching results.
 
 
 def search_query(tags="", pid=None):
-
     a = Requests('gelbooru', 'posts_list')
     if pid is None:
         p = 0
     else:
         p = pid
 
-    b = a.query_list(tags, pid=str(p))
+    if tags == "":
+        search = "rating:safe"
+
+    else:
+        search = tags
+
+    b = a.query_list(search, pid=str(p))
 
     return b  # Returns a list with JSON object containing the matching results.
+
