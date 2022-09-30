@@ -1,0 +1,59 @@
+{
+  "folders": [
+    {
+      "path": "."
+    },
+    {
+      "path": "./packages/bot-cloud-handler",
+      "name": "Ema Cloud Handler"
+    },
+    {
+      "path": "./packages/bot-event-dispatcher",
+      "name": "Ema Cloud Events Dispatcher"
+    }
+  ],
+  "settings": {
+    "editor.tabSize": 4,
+    "editor.rulers": [
+      120
+    ],
+    "editor.formatOnSave": false,
+    "[xml]": {
+      "editor.defaultFormatter": "DotJoshJohnson.xml"
+    },
+    "[yaml]": {
+      "editor.defaultFormatter": "redhat.vscode-yaml"
+    },
+    "[toml]": {
+      "editor.defaultFormatter": "tamasfe.even-better-toml"
+    },
+    "editor.codeActionsOnSave": {
+      "source.fixAll": true
+    },
+    "conventionalCommits.lineBreak": "\\",
+    "conventionalCommits.autoCommit": false,
+    "conventionalCommits.scopes": [],
+    "material-icon-theme.activeIconPack": "none",
+    "python.formatting.provider": "black",
+  },
+  "extensions": {
+    "recommendations": [
+      "christian-kohler.path-intellisense",
+      "DavidAnson.vscode-markdownlint",
+      "eamodio.gitlens",
+      "EditorConfig.EditorConfig",
+      "formulahendry.code-runner",
+      "mikestead.dotenv",
+      "ms-vsliveshare.vsliveshare",
+      "redhat.vscode-yaml",
+      "vivaxy.vscode-conventional-commits",
+      "DotJoshJohnson.xml",
+      "VisualStudioExptTeam.vscodeintellicode",
+      "PKief.material-icon-theme",
+      "ms-python.flake8",
+      "ms-python.python",
+      "ms-python.vscode-pylance",
+      "tamasfe.even-better-toml",
+    ]
+  }
+}

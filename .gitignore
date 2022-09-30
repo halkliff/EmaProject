@@ -1,3 +1,7 @@
+# compiled output
+/dist
+/tmp
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -49,20 +53,6 @@ coverage.xml
 *.mo
 *.pot
 
-# Django stuff:
-*.log
-local_settings.py
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-# Sphinx documentation
-docs/_build/
-
 # PyBuilder
 target/
 
@@ -75,8 +65,17 @@ target/
 # celery beat schedule file
 celerybeat-schedule
 
-# dotenv
+# System Files
+.DS_Store
+Thumbs.db
+
+# Env files
 .env
+*.env
+**/*.env
+!.env.example
+!*.env.example
+!**/*.env.example
 
 # virtualenv
 venv/
@@ -87,3 +86,14 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Logs
+logs
+*.log
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
