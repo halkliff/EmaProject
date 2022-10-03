@@ -32,7 +32,9 @@
     },
     "conventionalCommits.lineBreak": "\\",
     "conventionalCommits.autoCommit": false,
-    "conventionalCommits.scopes": [],
+    "conventionalCommits.scopes": [
+      "cloud_handler"
+    ],
     "material-icon-theme.activeIconPack": "none",
     "python.formatting.provider": "black",
   },
