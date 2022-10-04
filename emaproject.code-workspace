@@ -33,7 +33,8 @@
     "conventionalCommits.lineBreak": "\\",
     "conventionalCommits.autoCommit": false,
     "conventionalCommits.scopes": [
-      "cloud_handler"
+      "cloud_handler",
+      "events_dispatcher"
     ],
     "material-icon-theme.activeIconPack": "none",
     "python.formatting.provider": "black",

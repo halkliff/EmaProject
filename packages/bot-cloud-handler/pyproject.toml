@@ -21,6 +21,8 @@ black = "^22.8.0"
 ujson = "^5.5.0"
 python-dotenv = "^0.21.0"
 pyTelegramBotAPI = "^4.7.0"
+functions-framework = "^3.2.0"
+cloudevents = "^1.6.1"
 
 
 [tool.poetry.group.dev.dependencies]

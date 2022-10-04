@@ -24,3 +24,7 @@
 # EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGES.
 #
+from bot_cloud_handler.core.utils.temp_lru import temp_lru_cache
+
+
+__all__ = ["temp_lru_cache"]

@@ -24,3 +24,49 @@
 # EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGES.
 #
+
+from collections import OrderedDict
+
+
+__all__ = ["temp_lru_cache"]
+
+
+class temp_lru_cache(dict):
+    """
+    A temporary, multi utility LRU Cache class to cache information temporarily in
+    dicts. Different from the lru_cache decorators, this class is instantiated and is
+    not meant to be used to cache function results to avoid extensive workloads;
+    instead is served to cache dynamic information, like I/O info that can change
+    overtime.
+    """
+
+    _data = OrderedDict()
+
+    def __init__(self, max_size: int):
+        self.max_size = max_size
+
+    def __getitem__(self, key):
+        item = self._data.get(key)
+        if item is not None:
+            self._data.move_to_end(key)
+        return item
+
+    def __setitem__(self, key, value):
+        if key in self._data:
+            self._data.move_to_end(key)
+        self._data[key] = value
+        if len(self._data) > self.max_size:
+            self._data.popitem(last=False)
+
+    def __delitem__(self, key):
+        if key in self._data:
+            del self._data[key]
+
+    def __getattr__(self, item):
+        return self.__getitem__(item)
+
+    def __setattr__(self, key, value):
+        return self.__setitem__(key, value)
+
+    def __delattr__(self, item):
+        return self.__delitem__(item)
