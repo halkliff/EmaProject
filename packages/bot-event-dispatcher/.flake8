@@ -1,0 +1,5 @@
+[flake8]
+max-line-length = 88
+max-doc-length = 120
+ident-size = 4
+extend-ignore = E203

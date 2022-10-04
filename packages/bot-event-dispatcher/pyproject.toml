@@ -1,0 +1,38 @@
+[tool.poetry]
+name = "bot-event-dispatcher"
+version = "0.1.0"
+description = ""
+authors = ["Halk Liff <halkliff@pm.me>"]
+readme = "README.md"
+license = "Apache-2.0"
+homepage = "https://github.com/halkliff/EmaProject/tree/main/packages/bot-event-dispatcher"
+repository = "https://github.com/halkliff/EmaProject.git"
+packages = [{include = "bot_event_dispatcher"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+flake8 = "^5.0.4"
+black = "^22.8.0"
+google-cloud-pubsub="^2.13.7"
+avro="^1.11.1"
+cloudevents = "^1.6.1"
+python-dotenv = "^0.21.0"
+pyTelegramBotAPI = "^4.7.0"
+ujson = "^5.5.0"
+functions-framework = "^3.2.0"
+
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^2.20.0"
+commitizen = "^2.35.0"
+
+[tool.poetry.scripts]
+export-requirements-files = "scripts.export_requirements_files:run"
+start-dev = "bot_event_dispatcher.long_polling_dispatcher:start"
+# start dev command to run on your own command line to start the bot in watch mode,
+# using node's nodemon
+# start-dev = "npx nodemon --watch ./bot_event_dispatcher --ext py --exec poetry run start"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
