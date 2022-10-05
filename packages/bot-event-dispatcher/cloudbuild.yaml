@@ -1,0 +1,61 @@
+steps:
+  - name: python:3.10-slim
+    env:
+      - REPO_NAME=$REPO_NAME
+      - SERVICE_NAME=$_SERVICE_NAME
+    id: Build
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        python -c "from shutil import make_archive; from os import getenv; __REPO_NAME = getenv('REPO_NAME'); __SERVICE_NAME = getenv('SERVICE_NAME'); make_archive(f'{__REPO_NAME}-{__SERVICE_NAME}', 'zip', '$_SRC_FOLDER');"
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
+    id: Copy to Cloud Storage
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        gsutil cp $REPO_NAME-$_SERVICE_NAME.zip gs://$_BUCKET_NAME/$REPO_NAME-$_SERVICE_NAME:$SHORT_SHA.zip
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk:slim"
+    id: Deploy
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        gcloud functions deploy $_SERVICE_NAME \
+        --gen2 \
+        --allow-unauthenticated \
+        --run-service-account=$_SERVICE_ACCOUNT \
+        --service-account=$_SERVICE_ACCOUNT \
+        --region=$_REGION \
+        --trigger-http \
+        --runtime=$_RUNTIME \
+        --source=gs://$_BUCKET_NAME/$REPO_NAME-$_SERVICE_NAME:$SHORT_SHA.zip \
+        --entry-point=$_ENTRY_POINT \
+        --trigger-topic=$_PUBSUB_TOPIC \
+        --project=$_PROJECT_ID \
+        --memory=256MiB \
+        --max-instances=100 \
+        --min-instances=1 \
+        --set-secrets='API_HASH=$_API_HASH_SECRET,API_ID=$_API_ID_SECRET,MASTER_BOT_TOKEN=$_MASTER_BOT_TOKEN_SECRET,WEBHOOK_SECRET=$_WEBHOOK_SECRET_SECRET' \
+        --set-env-vars='ENV=production,PUSH_ENDPOINT=$_PUSH_ENDPOINT,PUBSUB_TOPIC_ID=$_PUBSUB_TOPIC,PUBSUB_SUBSCRIPTION_ID=$_PUBSUB_SUBSCRIPTION,PROJECT_ID=$_PROJECT_ID' \
+options:
+  substitutionOption: ALLOW_LOOSE
+  logging: CLOUD_LOGGING_ONLY
+timeout: 1200s
+substitutions:
+  _SRC_FOLDER: ./packages/bot-cloud-events-dispatcher
+  _ENTRY_POINT: bot_cloud_events_dispatcher
+  _SERVICE_NAME: bot-cloud-events-dispatcher
+  _PUBSUB_TOPIC: ema-cloud-bot-api-general-updates
+  _PUBSUB_SUBSCRIPTION: ema-cloud-bot-api-general-updates-sub
+  _REGION: europe-west2
+  _BUCKET_NAME: ema-cloud-events-dispatcher-builds
+  _PROJECT_ID: ema-project-services
+  _RUNTIME: python310
+  _SERVICE_ACCOUNT: cloud-events-dispatcher-acc@ema-project-services.iam.gserviceaccount.com
+  _API_HASH_SECRET: projects/539080912763/secrets/ema-telegram_api_hash:latest
+  _API_ID_SECRET: projects/539080912763/secrets/ema-telegram_api_id:latest
+  _MASTER_BOT_TOKEN_SECRET: projects/539080912763/secrets/ema-telegram_master_bot_token:latest
+  _WEBHOOK_SECRET: projects/539080912763/secrets/ema-telegram_webhook_secret:latest
+  _PUSH_ENDPOINT: wait
