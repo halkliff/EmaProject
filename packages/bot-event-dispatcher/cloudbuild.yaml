@@ -32,7 +32,6 @@ steps:
         --runtime=$_RUNTIME \
         --source=gs://$_BUCKET_NAME/$REPO_NAME-$_SERVICE_NAME:$SHORT_SHA.zip \
         --entry-point=$_ENTRY_POINT \
-        --trigger-topic=$_PUBSUB_TOPIC \
         --project=$_PROJECT_ID \
         --memory=256MiB \
         --max-instances=100 \
