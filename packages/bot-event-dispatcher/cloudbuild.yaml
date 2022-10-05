@@ -37,7 +37,7 @@ steps:
         --memory=256MiB \
         --max-instances=100 \
         --min-instances=1 \
-        --set-secrets='API_HASH=$_API_HASH_SECRET,API_ID=$_API_ID_SECRET,MASTER_BOT_TOKEN=$_MASTER_BOT_TOKEN_SECRET,WEBHOOK_SECRET=$_WEBHOOK_SECRET_SECRET' \
+        --set-secrets='API_HASH=$_API_HASH_SECRET,API_ID=$_API_ID_SECRET,MASTER_BOT_TOKEN=$_MASTER_BOT_TOKEN_SECRET,WEBHOOK_SECRET=$_WEBHOOK_SECRET' \
         --set-env-vars='ENV=production,PUSH_ENDPOINT=$_PUSH_ENDPOINT,PUBSUB_TOPIC_ID=$_PUBSUB_TOPIC,PUBSUB_SUBSCRIPTION_ID=$_PUBSUB_SUBSCRIPTION,PROJECT_ID=$_PROJECT_ID' \
 options:
   substitutionOption: ALLOW_LOOSE
@@ -58,4 +58,4 @@ substitutions:
   _API_ID_SECRET: projects/539080912763/secrets/ema-telegram_api_id:latest
   _MASTER_BOT_TOKEN_SECRET: projects/539080912763/secrets/ema-telegram_master_bot_token:latest
   _WEBHOOK_SECRET: projects/539080912763/secrets/ema-telegram_webhook_secret:latest
-  _PUSH_ENDPOINT: wait
+  _PUSH_ENDPOINT: https://bot-cloud-handler-khcvjgykia-ue.a.run.app/
