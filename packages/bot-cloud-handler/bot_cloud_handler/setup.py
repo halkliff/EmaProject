@@ -79,7 +79,7 @@ async def get_telethon_bot(bot_token: str | None = None) -> TelegramClient:
     bot = TelegramClient(
         session=session
         if __ENVIRONMENT == "development"
-        else f"/tmp/ema-sessions/{session}",
+        else f"/tmp/{session}",
         api_id=__API_ID,
         api_hash=__API_HASH,
         receive_updates=False,
