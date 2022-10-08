@@ -25,20 +25,40 @@
 # SUCH DAMAGES.
 #
 from typing import Callable
-from bot_cloud_handler.setup import logger
+from bot_cloud_handler.core.services.rate_limiting import RateLimiting
+from bot_cloud_handler.setup import logger, bot_logger
+from dependency_injector.wiring import inject, Provide
 from telebot.types import Message
 from telethon import TelegramClient
 from telebot.async_telebot import AsyncTeleBot
 
 
-def catchall(
-    bot: AsyncTeleBot, telethon_bot: TelegramClient
+@inject
+def catch_all(
+    bot: AsyncTeleBot = Provide["bot"],
+    telethon_bot: TelegramClient = Provide["telethon_bot"],
+    rate_limiting: RateLimiting = Provide["rate_limiting"],
 ) -> Callable[[Message], None]:
+    logger.debug(
+        f"Wired catch_all handler with [bot={bot}] and [telethon_bot={telethon_bot}]"
+    )
+
     @bot.message_handler(func=lambda _: True)
     async def handler(message: Message) -> None:
-        logger.warning(
+        bot_logger.warning(
             f"Unexpected message from {message.from_user.id}: {message.text}",
         )
+
+        chat_type = (
+            message.reply_to_message.chat.type
+            if message.reply_to_message is not None
+            else message.chat.type
+        )
+
+        chat_id = message.chat.id
+
+        await rate_limiting.delay_message(chat_type, chat_id)
+
         await telethon_bot.send_message(
             message.from_user.id, "I am still under construction, try again later."
         )

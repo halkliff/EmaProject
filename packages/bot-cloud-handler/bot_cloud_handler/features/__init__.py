@@ -25,6 +25,6 @@
 # SUCH DAMAGES.
 #
 from bot_cloud_handler.features.start import start
-from bot_cloud_handler.features.catch_all import catchall
+from bot_cloud_handler.features.catch_all import catch_all
 
-__all__ = ["start", "catchall"]
+__all__ = ["start", "catch_all"]

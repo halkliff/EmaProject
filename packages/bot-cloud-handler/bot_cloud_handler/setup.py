@@ -27,10 +27,18 @@
 
 import sys
 import logging
+import asyncio
+from motor.motor_asyncio import AsyncIOMotorClient
+from beanie import init_beanie
+
+from redis.asyncio import Redis
+from dependency_injector import containers, providers
 from typing import OrderedDict
 from telethon import TelegramClient
 from telebot.async_telebot import AsyncTeleBot
 from telebot import logger as bot_logger, types, formatter
+
+from bot_cloud_handler.core.services.rate_limiting import RateLimiting
 
 
 logger = logging.getLogger("bot_cloud_handler")
@@ -44,6 +52,14 @@ __API_HASH = None
 __API_ID = None
 __MASTER_BOT_TOKEN = None
 __ENVIRONMENT = None
+__REDIS_HOST = None
+__REDIS_PORT = None
+__REDIS_PASSWORD = None
+__MONGODB_URI = None
+# Delay in milliseconds between messages
+__MESSAGE_DELAY = 33  # 30 messages per second
+__MESSAGE_DELAY_USER = 500  # = 60s / 0.5s = 120 messages per minute
+__MESSAGE_DELAY_GROUP = 3000  # = 60s / 3s = 20 messages per minute
 
 try:
     from dotenv import load_dotenv
@@ -55,8 +71,22 @@ try:
     __API_ID = getenv("API_ID")
     __MASTER_BOT_TOKEN = getenv("MASTER_BOT_TOKEN")
     __ENVIRONMENT = getenv("ENV")
-    if not __API_HASH or not __API_ID or not __MASTER_BOT_TOKEN:
+    __REDIS_HOST = getenv("REDIS_HOST")
+    __REDIS_PORT = getenv("REDIS_PORT")
+    __REDIS_PASSWORD = getenv("REDIS_PASSWORD")
+    __MONGODB_URI = getenv("MONGODB_URI")
+    if (
+        not __API_HASH
+        or not __API_ID
+        or not __MASTER_BOT_TOKEN
+        or not __REDIS_HOST
+        or not __REDIS_PORT
+        or not __REDIS_PASSWORD
+        or not __MONGODB_URI
+    ):
         raise Exception("Missing environment variables")
+
+    print(f"MongoDB URI: {__MONGODB_URI}")
 except Exception as e:
     print(e, file=sys.stderr)
     sys.exit(2)
@@ -77,9 +107,7 @@ async def get_telethon_bot(bot_token: str | None = None) -> TelegramClient:
         __TELETHON_INSTANCES_CACHE.move_to_end(session)
         return bot
     bot = TelegramClient(
-        session=session
-        if __ENVIRONMENT == "development"
-        else f"/tmp/{session}",
+        session=session if __ENVIRONMENT == "development" else f"/tmp/{session}",
         api_id=__API_ID,
         api_hash=__API_HASH,
         receive_updates=False,
@@ -104,7 +132,7 @@ async def get_bot(bot_token: str | None = None) -> AsyncTeleBot:
         __BOT_INSTANCES_CACHE.move_to_end(session)
         return bot
 
-    bot = AsyncTeleBot(bot_token, parse_mode="MARKDOWN")
+    bot = AsyncTeleBot(bot_token, parse_mode="MarkdownV2")
 
     async def update_listener(messages: list[types.Message]):
         for message in messages:
@@ -125,18 +153,68 @@ async def get_bot(bot_token: str | None = None) -> AsyncTeleBot:
     return bot
 
 
-def setup_features(bot: AsyncTeleBot, telethon_bot: TelegramClient):
+_mongodb_client = AsyncIOMotorClient(__MONGODB_URI, serverSelectionTimeoutMS=5000)
+
+asyncio.run(init_beanie(database=_mongodb_client.db_name, document_models=[]))
+
+_redis_client = Redis(
+    host=__REDIS_HOST,
+    port=__REDIS_PORT,
+    password=__REDIS_PASSWORD,
+    db=0,
+    decode_responses=True,
+    ssl=True,
+)
+
+
+class InjectionContainer(containers.DeclarativeContainer):
+    mongodb_client = providers.Object(_mongodb_client)
+    redis_client = providers.Object(_redis_client)
+    config = providers.Configuration()
+
+    rate_limiting = providers.Singleton(
+        RateLimiting, redis_client=redis_client, config=config
+    )
+
+
+mongodb_client = _mongodb_client
+redis_client = _redis_client
+
+
+def setup_features(bot_instance: AsyncTeleBot, telethon_bot_instance: TelegramClient):
     assert isinstance(
-        bot, AsyncTeleBot
-    ), f"TeleBot bot is not an AsyncTelebot, but {type(bot)}"  # noqa: E501
+        bot_instance, AsyncTeleBot
+    ), f"TeleBot bot is not an AsyncTelebot, but {type(bot_instance)}"  # noqa: E501
     assert isinstance(
-        telethon_bot, TelegramClient
-    ), f"Telethon bot is not a TelegramClient, but {type(telethon_bot)}"  # noqa: E501
+        telethon_bot_instance, TelegramClient
+    ), f"Telethon bot is not a TelegramClient, but {type(telethon_bot_instance)}"  # noqa: E501
+
     from . import features
+
+    class SetupFeaturesContainer(InjectionContainer):
+        bot = providers.Object(bot_instance)
+        telethon_bot = providers.Object(telethon_bot_instance)
+
+    di_container = SetupFeaturesContainer()
+    di_container.config.from_dict(
+        {
+            "bot_token": bot_instance.token,
+            "env": __ENVIRONMENT,
+            "message_delay_user": __MESSAGE_DELAY_USER,
+            "message_delay_group": __MESSAGE_DELAY_GROUP,
+            "message_delay": __MESSAGE_DELAY,
+        }
+    )
+    di_container.wire(
+        modules=[
+            __name__,
+            *list(map(lambda f: f"{features.__name__}.{f}", features.__all__)),
+        ]
+    )
 
     for feature in features.__dict__.values():
         if callable(feature):
-            feature(bot=bot, telethon_bot=telethon_bot)
+            feature()
 
 
-__all__ = ["get_bot", "get_telethon_bot", "setup_features"]
+__all__ = ["get_bot", "get_telethon_bot", "setup_features", "mongodb_client"]

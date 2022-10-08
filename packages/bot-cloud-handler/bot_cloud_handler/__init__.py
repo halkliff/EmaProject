@@ -42,13 +42,17 @@ from telethon import TelegramClient
 
 load_dotenv()
 
-
-async_loop = asyncio.get_event_loop()
+async_loop = asyncio.new_event_loop()
+asyncio.set_event_loop(async_loop)
 
 
 async def main(bot: AsyncTeleBot, tb: TelegramClient):
     await bot.get_me()  # Ensures the bot API is ready
     await tb.get_me()  # First call to ensure the client is ready
+    await bot.delete_webhook(
+        drop_pending_updates=False
+    )  # Ensures that the polling will work
+    await bot.remove_webhook()
     await bot.infinity_polling()
 
 
