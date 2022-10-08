@@ -39,7 +39,7 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 # Session items
-*.session
+*.session*
 
 
 # Unit test / coverage reports
