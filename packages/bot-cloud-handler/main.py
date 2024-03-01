@@ -27,53 +27,51 @@
 try:
     import ujson as json
 except ImportError:
-    import json
+    import json  # type: ignore[no-redef]
 import asyncio
-from os import getenv
 import signal
+from typing import Optional
+from types import FrameType
 from base64 import b64decode
 import functions_framework
 from cloudevents.http import CloudEvent
 import logging
 from telebot.types import Update
-from dotenv import load_dotenv
+from telebot import logger as bot_logger
+
+from bot_cloud_handler.config import CONFIG, Env
 from bot_cloud_handler.setup import (
     get_bot,
-    get_telethon_bot,
+    get_mtproto_bot,
     logger,
-    bot_logger,
     setup_features,
 )
 
 
-load_dotenv()
-
-environment = getenv("ENV")
-
-if environment == "production":
-    logger.setLevel(logging.INFO)
-    bot_logger.setLevel(logging.INFO)
-elif environment == "development":
-    logger.setLevel(logging.DEBUG)
-    bot_logger.setLevel(logging.DEBUG)
-else:
-    logger.setLevel(logging.ERROR)
-    bot_logger.setLevel(logging.ERROR)
+match CONFIG.env:
+    case Env.DEV:
+        logger.setLevel(logging.DEBUG)
+        bot_logger.setLevel(logging.DEBUG)
+    case Env.PROD:
+        logger.setLevel(logging.INFO)
+        bot_logger.setLevel(logging.INFO)
+    case _:
+        logger.setLevel(logging.ERROR)
+        bot_logger.setLevel(logging.ERROR)
 
 
 __HANDLED_BOTS: set[str] = set()
-__HANDLED_BOTS.add(getenv("MASTER_BOT_TOKEN"))
+__HANDLED_BOTS.add(CONFIG.master_bot_token)
 
 bot_logger.info("Starting bot")
 
 async_loop = asyncio.get_event_loop()
-
-async_loop.run_until_complete(get_bot())
-async_loop.run_until_complete(get_telethon_bot())
+async_loop.run_until_complete(get_bot(CONFIG)(None))
+async_loop.run_until_complete(get_mtproto_bot(CONFIG)(None))
 
 
 @functions_framework.cloud_event
-def bot_cloud_handler(event: CloudEvent):
+def bot_cloud_handler(event: CloudEvent) -> None:
     logger.debug(f"Received event: {event}")
 
     event_data = json.loads(b64decode(event.data["message"]["data"]).decode("utf-8"))
@@ -86,10 +84,8 @@ def bot_cloud_handler(event: CloudEvent):
     else:
         bot_token = None
 
-    bot = async_loop.run_until_complete(get_bot(bot_token))
-    telethon_bot = async_loop.run_until_complete(get_telethon_bot(bot_token))
-
-    print(f"bot: {bot}, telethon_bot: {telethon_bot}")
+    bot = async_loop.run_until_complete(get_bot(CONFIG)(bot_token))
+    mtproto_bot = async_loop.run_until_complete(get_mtproto_bot(CONFIG)(bot_token))
 
     raw_updates = event_data["updates"]
     if raw_updates is None or (
@@ -100,7 +96,7 @@ def bot_cloud_handler(event: CloudEvent):
         )
         return
 
-    setup_features(bot, telethon_bot)
+    setup_features(bot, mtproto_bot)
 
     updates = []
 
@@ -111,30 +107,29 @@ def bot_cloud_handler(event: CloudEvent):
         updates.append(Update.de_json(raw_updates))
 
     async_loop.run_until_complete(bot.process_new_updates(updates))
-    print(f"should have sent updates {updates}")
     return
 
 
 __all__ = ["bot_cloud_handler"]
 
 
-def _stop_telethon_bot(bot_token: str) -> None:
-    telethon_bot = async_loop.run_until_complete(get_telethon_bot(bot_token))
-    async_loop.run_until_complete(telethon_bot.log_out())
+def _stop_mtproto_bot(bot_token: str) -> None:
+    mtproto_bot = async_loop.run_until_complete(get_mtproto_bot(CONFIG)(bot_token))
+    async_loop.run_until_complete(mtproto_bot.log_out())
     return
 
 
-def stop(s, f):
+def stop(s: int, _: Optional[FrameType]) -> None:
     import sys
-    print(f"<s>: {s}, <f>: {f}")
+
     bot_logger.warn("Stopping bot")
     for token in __HANDLED_BOTS:
-        _stop_telethon_bot(token)
+        _stop_mtproto_bot(token)
     sys.exit(s)
 
 
-for signum in [signal.SIGTERM, signal.SIGINT]:
+for sig_num in [signal.SIGTERM, signal.SIGINT]:
     try:
-        signal.signal(signum, stop)
+        signal.signal(sig_num, stop)
     except (OSError, RuntimeError):
         pass

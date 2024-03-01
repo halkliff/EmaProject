@@ -1,5 +1,5 @@
 steps:
-  - name: python:3.10-slim
+  - name: python:3.12-slim
     env:
       - REPO_NAME=$REPO_NAME
       - SERVICE_NAME=$_SERVICE_NAME
@@ -50,7 +50,7 @@ substitutions:
   _REGION: us-east1
   _BUCKET_NAME: ema-cloud-handler-builds
   _PROJECT_ID: ema-project-services
-  _RUNTIME: python310
+  _RUNTIME: python312
   _SERVICE_ACCOUNT: cloud-handlers-service-account@ema-project-services.iam.gserviceaccount.com
   _API_HASH_SECRET: projects/539080912763/secrets/ema-telegram_api_hash:latest
   _API_ID_SECRET: projects/539080912763/secrets/ema-telegram_api_id:latest

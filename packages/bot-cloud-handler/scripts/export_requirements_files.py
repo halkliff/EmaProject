@@ -24,7 +24,7 @@
 # EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGES.
 #
-def run():
+def run() -> None:
     from subprocess import call
     from pathlib import Path
 

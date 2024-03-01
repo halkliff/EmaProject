@@ -24,7 +24,7 @@
 # EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGES.
 #
-from bot_cloud_handler.features.start import start
-from bot_cloud_handler.features.catch_all import catch_all
+from bot_cloud_handler.features.start import StartFeature
+from bot_cloud_handler.features.catch_all import CatchAllFeature
 
-__all__ = ["start", "catch_all"]
+__all__ = ["StartFeature", "CatchAllFeature"]

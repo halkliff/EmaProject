@@ -29,15 +29,18 @@ import sys
 import logging
 import asyncio
 from motor.motor_asyncio import AsyncIOMotorClient
+from motor.core import AgnosticClient
 from beanie import init_beanie
-
+import aiohttp
 from redis.asyncio import Redis
-from dependency_injector import containers, providers
-from typing import OrderedDict
+from injector import Injector, Module, inject, singleton, provider
+from typing import OrderedDict, Callable, Any, Optional
+from collections.abc import Coroutine
 from telethon import TelegramClient
 from telebot.async_telebot import AsyncTeleBot
-from telebot import logger as bot_logger, types, formatter
+from telebot import types, formatter
 
+from .config import CONFIG, Config
 from bot_cloud_handler.core.services.rate_limiting import RateLimiting
 
 
@@ -47,174 +50,154 @@ __console_output = logging.StreamHandler(sys.stdout)
 __console_output.setFormatter(formatter)
 
 logger.addHandler(__console_output)
-
-__API_HASH = None
-__API_ID = None
-__MASTER_BOT_TOKEN = None
-__ENVIRONMENT = None
-__REDIS_HOST = None
-__REDIS_PORT = None
-__REDIS_PASSWORD = None
-__MONGODB_URI = None
-# Delay in milliseconds between messages
-__MESSAGE_DELAY = 33  # 30 messages per second
-__MESSAGE_DELAY_USER = 500  # = 60s / 0.5s = 120 messages per minute
-__MESSAGE_DELAY_GROUP = 3000  # = 60s / 3s = 20 messages per minute
-
-try:
-    from dotenv import load_dotenv
-    from os import getenv
-
-    load_dotenv()
-
-    __API_HASH = getenv("API_HASH")
-    __API_ID = getenv("API_ID")
-    __MASTER_BOT_TOKEN = getenv("MASTER_BOT_TOKEN")
-    __ENVIRONMENT = getenv("ENV")
-    __REDIS_HOST = getenv("REDIS_HOST")
-    __REDIS_PORT = getenv("REDIS_PORT")
-    __REDIS_PASSWORD = getenv("REDIS_PASSWORD")
-    __MONGODB_URI = getenv("MONGODB_URI")
-    if (
-        not __API_HASH
-        or not __API_ID
-        or not __MASTER_BOT_TOKEN
-        or not __REDIS_HOST
-        or not __REDIS_PORT
-        or not __REDIS_PASSWORD
-        or not __MONGODB_URI
-    ):
-        raise Exception("Missing environment variables")
-
-    print(f"MongoDB URI: {__MONGODB_URI}")
-except Exception as e:
-    print(e, file=sys.stderr)
-    sys.exit(2)
-
 __CACHE_MAX_SIZE = 16
 
-__TELETHON_INSTANCES_CACHE: OrderedDict[str, TelegramClient] = OrderedDict()
+__MTPROTO_INSTANCES_CACHE: OrderedDict[str, TelegramClient] = OrderedDict()
 
 __BOT_INSTANCES_CACHE: OrderedDict[str, AsyncTeleBot] = OrderedDict()
 
 
-async def get_telethon_bot(bot_token: str | None = None) -> TelegramClient:
-    if not bot_token:
-        bot_token = __MASTER_BOT_TOKEN
-    session = bot_token.split(":")[0]
-    bot = __TELETHON_INSTANCES_CACHE.get(session)
-    if bot is not None:
-        __TELETHON_INSTANCES_CACHE.move_to_end(session)
-        return bot
-    bot = TelegramClient(
-        session=session if __ENVIRONMENT == "development" else f"/tmp/{session}",
-        api_id=__API_ID,
-        api_hash=__API_HASH,
-        receive_updates=False,
-        base_logger=bot_logger,
-        catch_up=False,
-    )
-    bot = await bot.start(bot_token=bot_token)
-    __TELETHON_INSTANCES_CACHE[session] = bot
+def get_mtproto_bot(
+    config: Config,
+) -> Callable[[Optional[str]], Coroutine[Any, Any, TelegramClient]]:
+    async def _get_mtproto_bot(bot_token: Optional[str] = None) -> TelegramClient:
+        if not bot_token:
+            bot_token = config.master_bot_token
+        session_name = bot_token.split(":")[0]
+        bot = __MTPROTO_INSTANCES_CACHE.get(session_name)
+        if bot is not None:
+            __MTPROTO_INSTANCES_CACHE.move_to_end(session_name)
+            return bot
+        bot = await TelegramClient(
+            session=(
+                session_name if config.env.value == "dev" else f"/tmp/{session_name}"
+            ),
+            api_id=config.telegram_api.api_id,
+            api_hash=config.telegram_api.api_hash,
+            receive_updates=False,
+        ).start(bot_token=bot_token)
+        __MTPROTO_INSTANCES_CACHE[session_name] = bot
 
-    if len(__TELETHON_INSTANCES_CACHE) > __CACHE_MAX_SIZE:
-        __TELETHON_INSTANCES_CACHE.popitem(last=False)
+        if len(__MTPROTO_INSTANCES_CACHE) > __CACHE_MAX_SIZE:
+            __MTPROTO_INSTANCES_CACHE.popitem(last=False)
 
-    return bot
-
-
-async def get_bot(bot_token: str | None = None) -> AsyncTeleBot:
-    if not bot_token:
-        bot_token = __MASTER_BOT_TOKEN
-    session = bot_token.split(":")[0]
-    bot = __BOT_INSTANCES_CACHE.get(session)
-    if bot is not None:
-        __BOT_INSTANCES_CACHE.move_to_end(session)
         return bot
 
-    bot = AsyncTeleBot(bot_token, parse_mode="MarkdownV2")
-
-    async def update_listener(messages: list[types.Message]):
-        for message in messages:
-            if message.content_type == "text":
-                logger.debug(
-                    f'[DEBUG_MESSAGES] [BOT="{bot_token}"] {message.chat.first_name if message.chat.type == "private" else message.chat.title}: {message.text}',  # noqa: E501
-                )
-
-    bot.set_update_listener(update_listener)
-
-    __BOT_INSTANCES_CACHE[session] = bot
-
-    if len(__BOT_INSTANCES_CACHE) > __CACHE_MAX_SIZE:
-        __BOT_INSTANCES_CACHE.popitem(last=False)
-
-    await bot.get_me()
-
-    return bot
+    return _get_mtproto_bot
 
 
-_mongodb_client = AsyncIOMotorClient(__MONGODB_URI, serverSelectionTimeoutMS=5000)
+def get_bot(
+    config: Config,
+) -> Callable[[Optional[str]], Coroutine[Any, Any, AsyncTeleBot]]:
+    async def _get_bot(bot_token: Optional[str] = None) -> AsyncTeleBot:
+        if not bot_token:
+            bot_token = config.master_bot_token
+        session = bot_token.split(":")[0]
+        bot = __BOT_INSTANCES_CACHE.get(session)
+        if bot is not None:
+            __BOT_INSTANCES_CACHE.move_to_end(session)
+            return bot
 
-asyncio.run(init_beanie(database=_mongodb_client.db_name, document_models=[]))
+        bot = AsyncTeleBot(bot_token, parse_mode="MarkdownV2")
 
-_redis_client = Redis(
-    host=__REDIS_HOST,
-    port=__REDIS_PORT,
-    password=__REDIS_PASSWORD,
-    db=0,
-    decode_responses=True,
-    ssl=True,
-)
+        async def update_listener(messages: list[types.Message]) -> None:
+            for message in messages:
+                if message.content_type == "text":
+                    logger.debug(
+                        f'[DEBUG_MESSAGES] [BOT="{bot_token}"] {message.chat.first_name if message.chat.type == "private" else message.chat.title}: {message.text}',  # noqa: E501
+                    )
 
+        bot.set_update_listener(update_listener)
 
-class InjectionContainer(containers.DeclarativeContainer):
-    mongodb_client = providers.Object(_mongodb_client)
-    redis_client = providers.Object(_redis_client)
-    config = providers.Configuration()
+        __BOT_INSTANCES_CACHE[session] = bot
 
-    rate_limiting = providers.Singleton(
-        RateLimiting, redis_client=redis_client, config=config
-    )
+        if len(__BOT_INSTANCES_CACHE) > __CACHE_MAX_SIZE:
+            __BOT_INSTANCES_CACHE.popitem(last=False)
 
+        await bot.get_me()
 
-mongodb_client = _mongodb_client
-redis_client = _redis_client
+        return bot
+
+    return _get_bot
 
 
-def setup_features(bot_instance: AsyncTeleBot, telethon_bot_instance: TelegramClient):
+class GlobalInjectionModule(Module):
+    @singleton
+    @provider
+    def provide_config(self) -> Config:
+        return CONFIG
+
+    @singleton
+    @provider
+    def provide_redis_client(self, config: Config) -> Redis:
+        return Redis(
+            host=config.redis.host,
+            port=config.redis.port,
+            password=config.redis.password,
+            db=0,
+            decode_responses=True,
+            ssl=True,
+        )
+
+    @singleton
+    @provider
+    def provide_mongodb_client(self, config: Config) -> AgnosticClient:
+        client: AgnosticClient = AsyncIOMotorClient(
+            host=config.mongo_uri, serverSelectionTimeoutMS=5000
+        )
+
+        asyncio.run(init_beanie(database=client.db_name, document_models=[]))
+
+        return client
+
+    @provider
+    def provide_http_client(self) -> aiohttp.ClientSession:
+        return aiohttp.ClientSession()
+
+
+def setup_features(
+    bot_instance: AsyncTeleBot, mtproto_bot_instance: TelegramClient
+) -> None:
     assert isinstance(
         bot_instance, AsyncTeleBot
     ), f"TeleBot bot is not an AsyncTelebot, but {type(bot_instance)}"  # noqa: E501
     assert isinstance(
-        telethon_bot_instance, TelegramClient
-    ), f"Telethon bot is not a TelegramClient, but {type(telethon_bot_instance)}"  # noqa: E501
+        mtproto_bot_instance, TelegramClient
+    ), f"mtproto bot is not a TelegramClient, but {type(mtproto_bot_instance)}"  # noqa: E501
 
     from . import features
 
-    class SetupFeaturesContainer(InjectionContainer):
-        bot = providers.Object(bot_instance)
-        telethon_bot = providers.Object(telethon_bot_instance)
+    class SetupBotsInjectionModule(Module):
+        @singleton
+        @provider
+        def provide_bot(self) -> AsyncTeleBot:
+            return bot_instance
 
-    di_container = SetupFeaturesContainer()
-    di_container.config.from_dict(
-        {
-            "bot_token": bot_instance.token,
-            "env": __ENVIRONMENT,
-            "message_delay_user": __MESSAGE_DELAY_USER,
-            "message_delay_group": __MESSAGE_DELAY_GROUP,
-            "message_delay": __MESSAGE_DELAY,
-        }
-    )
-    di_container.wire(
-        modules=[
-            __name__,
-            *list(map(lambda f: f"{features.__name__}.{f}", features.__all__)),
+        @singleton
+        @provider
+        def provide_mtproto_bot(self) -> TelegramClient:
+            return mtproto_bot_instance
+
+    class SetupRateLimitingInjectionModule(Module):
+        @singleton
+        @provider
+        @inject
+        def provide_rate_limiting(
+            self, redis_client: Redis, config: Config, bot: AsyncTeleBot
+        ) -> RateLimiting:
+            return RateLimiting(redis_client=redis_client, config=config, bot=bot)
+
+    injector = Injector(
+        [
+            GlobalInjectionModule(),
+            SetupBotsInjectionModule(),
+            SetupRateLimitingInjectionModule(),
         ]
     )
 
     for feature in features.__dict__.values():
         if callable(feature):
-            feature()
+            injector.get(feature)
 
 
-__all__ = ["get_bot", "get_telethon_bot", "setup_features", "mongodb_client"]
+__all__ = ["get_bot", "get_mtproto_bot", "setup_features"]

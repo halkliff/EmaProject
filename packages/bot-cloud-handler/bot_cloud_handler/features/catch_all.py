@@ -24,27 +24,42 @@
 # EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGES.
 #
-from typing import Callable
+from typing import override
 from bot_cloud_handler.core.services.rate_limiting import RateLimiting
-from bot_cloud_handler.setup import logger, bot_logger
-from dependency_injector.wiring import inject, Provide
+from bot_cloud_handler.setup import logger
+from injector import inject
 from telebot.types import Message
+from telebot import logger as bot_logger
 from telethon import TelegramClient
 from telebot.async_telebot import AsyncTeleBot
 
+from ._abstract_feature import AbstractFeature
 
-@inject
-def catch_all(
-    bot: AsyncTeleBot = Provide["bot"],
-    telethon_bot: TelegramClient = Provide["telethon_bot"],
-    rate_limiting: RateLimiting = Provide["rate_limiting"],
-) -> Callable[[Message], None]:
-    logger.debug(
-        f"Wired catch_all handler with [bot={bot}] and [telethon_bot={telethon_bot}]"
-    )
 
-    @bot.message_handler(func=lambda _: True)
-    async def handler(message: Message) -> None:
+class CatchAllFeature(AbstractFeature):
+    __handler_name__: str = "catch_all"
+
+    @inject
+    def __init__(
+        self,
+        bot: AsyncTeleBot,
+        mtproto_bot: TelegramClient,
+        rate_limiting: RateLimiting,
+    ) -> None:
+        super().__init__(bot, mtproto_bot, rate_limiting)
+
+    @override
+    def _setup_handler(self) -> None:
+        logger.debug(
+            f"Wired catch_all handler with [bot={self.bot}] and [mtproto_bot={self.mtproto_bot}]"  # noqa: E501
+        )
+
+        @self.bot.message_handler(func=lambda _: True)
+        async def _(message: Message) -> None:
+            await self(message)
+
+    @override
+    async def __call__(self, message: Message) -> None:
         bot_logger.warning(
             f"Unexpected message from {message.from_user.id}: {message.text}",
         )
@@ -57,10 +72,8 @@ def catch_all(
 
         chat_id = message.chat.id
 
-        await rate_limiting.delay_message(chat_type, chat_id)
+        await self.rate_limiting.delay_message(chat_type, chat_id)
 
-        await telethon_bot.send_message(
+        await self.mtproto_bot.send_message(
             message.from_user.id, "I am still under construction, try again later."
         )
-
-    return handler

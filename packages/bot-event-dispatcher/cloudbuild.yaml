@@ -1,5 +1,5 @@
 steps:
-  - name: python:3.10-slim
+  - name: python:3.12-slim
     env:
       - REPO_NAME=$REPO_NAME
       - SERVICE_NAME=$_SERVICE_NAME
@@ -43,8 +43,8 @@ options:
   logging: CLOUD_LOGGING_ONLY
 timeout: 1200s
 substitutions:
-  _SRC_FOLDER: ./packages/bot-cloud-events-dispatcher
-  _ENTRY_POINT: bot_cloud_events_dispatcher
+  _SRC_FOLDER: ./packages/bot-event-dispatcher
+  _ENTRY_POINT: bot_event_dispatcher
   _SERVICE_NAME: bot-cloud-events-dispatcher
   _PUBSUB_TOPIC: ema-cloud-bot-api-general-updates
   _PUBSUB_SUBSCRIPTION: ema-cloud-bot-api-general-updates-sub

@@ -28,7 +28,7 @@
       "editor.defaultFormatter": "tamasfe.even-better-toml"
     },
     "editor.codeActionsOnSave": {
-      "source.fixAll": true
+      "source.fixAll": "explicit"
     },
     "conventionalCommits.lineBreak": "\\",
     "conventionalCommits.autoCommit": false,
@@ -38,6 +38,10 @@
     ],
     "material-icon-theme.activeIconPack": "none",
     "python.formatting.provider": "black",
+    "cSpell.words": [
+      "icecream",
+      "unwire"
+    ],
   },
   "extensions": {
     "recommendations": [
@@ -58,5 +62,6 @@
       "ms-python.vscode-pylance",
       "tamasfe.even-better-toml",
     ]
-  }
+  },
+  "python.analysis.typeCheckingMode": "strict"
 }

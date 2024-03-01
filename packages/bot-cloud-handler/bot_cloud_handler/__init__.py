@@ -28,25 +28,22 @@ import sys
 import signal
 import logging
 import asyncio
-from dotenv import load_dotenv
+from .config import CONFIG, Env
 from bot_cloud_handler.setup import (
     get_bot,
-    get_telethon_bot,
+    get_mtproto_bot,
     logger,
-    bot_logger,
     setup_features,
 )
-from bot_cloud_handler import features
 from telebot.async_telebot import AsyncTeleBot
+from telebot import logger as bot_logger
 from telethon import TelegramClient
-
-load_dotenv()
 
 async_loop = asyncio.new_event_loop()
 asyncio.set_event_loop(async_loop)
 
 
-async def main(bot: AsyncTeleBot, tb: TelegramClient):
+async def main(bot: AsyncTeleBot, tb: TelegramClient) -> None:
     await bot.get_me()  # Ensures the bot API is ready
     await tb.get_me()  # First call to ensure the client is ready
     await bot.delete_webhook(
@@ -56,44 +53,42 @@ async def main(bot: AsyncTeleBot, tb: TelegramClient):
     await bot.infinity_polling()
 
 
-def start():
-    from os import getenv
+def start() -> None:
 
-    global environment
-    environment = getenv("ENV")
-    if environment == "production":
-        logger.setLevel(logging.INFO)
-        bot_logger.setLevel(logging.INFO)
-    elif environment == "development":
-        logger.setLevel(logging.DEBUG)
-        bot_logger.setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.ERROR)
-        bot_logger.setLevel(logging.ERROR)
+    match CONFIG.env:
+        case Env.DEV:
+            logger.setLevel(logging.DEBUG)
+            bot_logger.setLevel(logging.DEBUG)
+        case Env.PROD:
+            logger.setLevel(logging.INFO)
+            bot_logger.setLevel(logging.INFO)
+        case _:
+            logger.setLevel(logging.ERROR)
+            bot_logger.setLevel(logging.ERROR)
 
     bot_logger.info("Starting bot")
 
-    bot = async_loop.run_until_complete(get_bot())
-    telethon_bot = async_loop.run_until_complete(get_telethon_bot())
+    bot = async_loop.run_until_complete(get_bot(CONFIG)(None))
+    mtproto_bot = async_loop.run_until_complete(get_mtproto_bot(CONFIG)(None))
 
-    def stop():
+    def stop() -> None:
         bot_logger.warn("Stopping bot")
-        async_loop.run_until_complete(telethon_bot.log_out())
+        async_loop.run_until_complete(mtproto_bot.log_out())
         sys.exit(0)
 
     signal.signal(
         signal.SIGTERM,
-        lambda signum, frame: stop(),
+        lambda _, frame: stop(),
     )
 
     try:
-        setup_features(bot, telethon_bot)
-        async_loop.run_until_complete(main(bot, telethon_bot))
+        setup_features(bot, mtproto_bot)
+        async_loop.run_until_complete(main(bot, mtproto_bot))
     except KeyboardInterrupt:
         stop()
 
 
-__all__ = ["start", "features"]
+__all__ = ["start"]
 
 if __name__ == "__main__":
     start()
